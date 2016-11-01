@@ -1,0 +1,203 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h3>{{data.title}}  : {{ data.date }}<small> - show details for today </small></h3>
+              </div>
+
+              <div class="title_right">
+                <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for...">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="row">
+
+            <!-- Input by Family -->
+              <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>By Product Family <small>..</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist">Show Serial number list</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Family</th>
+                          <th>Qty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in data.number_by_family|dictsortreversed:"number" %}
+                        <tr>
+                          <th scope="row">{{forloop.counter}}</th>
+                          <td>{{item.name}}</td>
+                          <td><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist/family/{{item.name}}">
+                                {{item.number}}
+                              </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+
+                  </div>
+                </div>
+              </div>
+              <!-- End Input by Family -->
+
+              <!-- Input by Product -->
+              <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>By Product Number <small>...</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist">Show Serial number list</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Product</th>
+                          <th>Qty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in data.number_by_product|dictsortreversed:"number" %}
+                        <tr>
+                          <th scope="row">{{forloop.counter}}</th>
+                          <td>{{item.name}}</td>
+                          <td><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist/product/{{item.name}}">
+                                {{item.number}}
+                              </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+
+                  </div>
+                </div>
+              </div>
+              <!-- End Input by Family -->
+
+
+              <!-- Input by WorkOrder -->
+              <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>By Work Order<small>...</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist">Show Serial number list</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Work Order</th>
+                          <th>Qty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in data.number_by_workorder|dictsortreversed:"number" %}
+                        <tr>
+                          <th scope="row">{{forloop.counter}}</th>
+                          <td>{{item.name}}</td>
+                          <td><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist/workorder/{{item.name}}">
+                                {{item.number}}
+                              </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+
+                  </div>
+                </div>
+              </div>
+              <!-- End Input by WorkOrder -->
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /page content -->
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+ 
+
+        {% endblock java_content %}

@@ -1,0 +1,30 @@
+{% extends "production/base.html" %}
+
+
+{% block title %}
+{{ block.super }} : {{ press.title }}
+{% endblock title %}
+
+{% block content %}
+<h2>{{ press.title }}</h2>
+<p>
+Author: {{ press.author }}<br/>
+Date: {{ press.pub_date }}<br/>
+</p>
+
+<table class="table table-condensed">
+                                <thead>
+                                <tr>
+                                    <th>Rule Name</th>
+                                    <th>Side</th>
+                                    <th>Lower limit</th>
+                                    <th>Upper limit</th>
+                                    <th>Result</th>
+                                </tr>
+                              </thead>
+                              </table>
+<p>
+{{ press.body }}
+</p>
+{% endblock content %}
+

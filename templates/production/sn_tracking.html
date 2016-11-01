@@ -1,0 +1,225 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h3>{{data.title}} :<small> - show serial number details</small></h3>
+              </div>
+            </div>
+          <!-- start details -->
+          <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+              <div class="dashboard_graph">
+
+                <div class="row x_title">
+                  <div class="col-md-12">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        {{ form }}
+                      <input type="submit" value="Show!!" />
+                    </form>
+                  </div>
+
+              <!-- Tracking details -->
+              <div class="col-md-9 col-sm-9 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>Serial number : {{data.sn}} <small>..</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist">Show Serial number list</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <!-- <th>Serial Number</th> -->
+                          <!-- <th>Work Order</th> -->
+                          <th>Station</th>
+                          <th>Station Name</th>
+                          <th>Loop</th>
+                          <th>Tester</th>
+                          <th>Start</th>
+                          <!-- <th>Stop</th> -->
+                          <th>Result</th>
+                          <th>Dispose Code</th>
+                          <th>User</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in data.queryset %}
+                        <tr>
+                          <th scope="row">{{forloop.counter}}</th>
+                          <!-- <td>{{item.sn_wo.sn}}</td> -->
+                          <!-- <td>{{item.sn_wo.workorder}}</td> -->
+                          <td>{{item.station}}</td>
+                          <td>{{item.station.name}}</td>
+                          <td>{{item.loop}}</td>
+                          <td>{{item.tester}}</td>
+                          <td>{{item.started_date}}</td>
+                          <!-- <td>{{item.finished_date}}</td> -->
+                          <td>{{item.result}}</td>
+                          <td>{{item.dispose_code}}</td>
+                          <td>{{item.user}}</td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                    </table>
+
+                  </div>
+                </div>
+              </div>
+              <!-- End Tracking details -->
+
+                            <!-- Tracking details -->
+              <div class="col-md-3 col-sm-3 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>Unit<small>infomation</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/status/{{data.status}}/{{ data.date }}/snlist">Show Serial number list</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Information</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Register :</td>
+                          <td>{{data.queryset.first.sn_wo.created_date}}</td>
+                        </tr>
+                        <tr>
+                          <td>Last :</td>
+                          <td>{{data.queryset.first.sn_wo.modified_date}}</td>
+                        </tr>
+                        <tr>
+                          <td>Status :</td>
+                          <td>{{data.queryset.first.sn_wo.status}}</td>
+                        </tr>
+                        <tr>
+                          <td>Current Station :</td>
+                          <td>{{data.queryset.first.sn_wo.current_station}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th span=2>Work Order details</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Work order :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder}}</td>
+                        </tr>
+                        <tr>
+                          <td>Product :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.product}}</td>
+                        </tr>
+                        <tr>
+                          <td>Family :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.product.family}}</td>
+                        </tr>
+                        <tr>
+                          <td>Qty :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.qty}}</td>
+                        </tr>
+                        <tr>
+                          <td>Type :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.build_type}}</td>
+                        </tr>
+                        <tr>
+                          <td>Registered :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.registered}}</td>
+                        </tr>
+                        <tr>
+                          <td>In Process :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.inprocess}}</td>
+                        </tr>
+                        <tr>
+                          <td>Completed :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.completed}}</td>
+                        </tr>
+                        <tr>
+                          <td>Shipped :</td>
+                          <td>{{data.queryset.first.sn_wo.workorder.shipped}}</td>
+                        </tr>
+                        
+                      </tbody>
+                    </table>
+
+                  </div>
+                </div>
+              </div>
+              <!-- End Tracking details -->
+
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+          </div>
+        </div>
+
+        <!-- /page content -->
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+
+
+        {% endblock java_content %}

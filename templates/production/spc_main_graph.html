@@ -1,0 +1,287 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div id="head-title" class="col-md-6" class="pull-left">
+                  <h3>Product family : {{data.family}}  <small>on {{data.date_from}} to {{data.date_to}}</small></h3>
+                </div>
+                
+                <div class="col-md-6" class="pull-left">
+                  <!-- <form action="" method="post">
+                  {% csrf_token %}
+                      {{ form }}
+                      <input type="submit" value="Show!!" />
+                  </form> -->
+                  
+                  <!-- Group Radio -->
+                    <!-- <p class="text-muted">Group Radio</p> -->
+                    <form id="DateRangeSelect">
+                    <div class="row">
+                      <!-- <label >Select Family</label> -->
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                          <select class="select2_single form-control" tabindex="-1">
+                            {% for item in family %}
+                            <option value="{{item.name}}">{{item.name}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+
+                      <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default active">
+                          <input type="radio" name="opt_date_range" id="option1" checked="checked" value="7day"/> Last 7 days
+                        </label>
+                        <label class="btn btn-default">
+                          <input type="radio" name="opt_date_range" id="option2" value="14day" /> Last 14 days
+                        </label>
+                        <label class="btn btn-default">
+                          <input type="radio" name="opt_date_range" id="option3"  value="6week"/> Last 6 weeks
+                        </label>
+                      </div>
+                    </div>
+                    </form>
+                    <!-- End Group Radio -->
+                </div>
+              </div>
+            </div>
+
+         <div class="row">
+
+         
+          <!-- Station Section -->
+          {% for item in station %}
+          <div class="row">
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+              <div class="dashboard_graph">
+
+                <div class="row x_title">
+                  <div class="col-md-6">
+                    <h3>{{ item.station}} : {{ item.name}}<small></small></h3>
+                  </div>
+                  <div class="col-md-6"></div>
+                </div>
+
+             <!-- Parameter Section -->
+             {% for param in parameter|critical_station:item.station %}
+              <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>{{param.name}}<small></small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a id="changeurl" station={{item.station}} parameter={{param.name}} 
+                          datefrom={{data.date_from}} dateto={{data.date_to}}
+                          href="../graph/distribution/Acadia/{{item.station}}/{{param.name}}/7day/">Show Distribution</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div id="graph-body" class="x_content">
+                  <!--   Start Content -->
+                  <img class="img-responsive" src="../graph/boxplot/Acadia/{{item.station}}/{{param.name}}/7day/">
+
+                  <!-- SPC details -->
+                  <!-- <div>
+                              <ul class="list-inline widget_tally">
+                                <li>
+                                  <p>
+                                    <span class="month">Sample (N)</span>
+                                    <span class="count">+12%</span>
+                                  </p>
+                                </li>
+                                <li>
+                                  <p>
+                                    <span class="month">Mean </span>
+                                    <span class="count">+12%</span>
+                                  </p>
+                                </li>
+                                <li>
+                                  <p>
+                                    <span class="month">StdDev </span>
+                                    <span class="count">+12%</span>
+                                  </p>
+                                </li>
+                              </ul>
+                            </div> -->
+                  <!-- end SPC details -->
+                  <!-- End Content -->  
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+              <!-- End Parameter-->
+
+              
+
+              <div class="clearfix"></div>
+              </div>
+            </div>
+
+          </div>
+          {% endfor %}
+          <!-- end Station -->
+
+
+
+
+
+
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /page content -->
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+        <script>
+    $(function(){
+
+
+    //Text Box
+      $('#id_start_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+       $('#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+       });
+
+      if ($('input[name=opt_date_range]:checked').length > 0) {
+          // do something here
+        //alert ('Test Radio')
+      }
+
+
+      $('#DateRangeSelect input[type=radio]').change(function() {       
+            // $('body').css('cursor', 'wait');
+            $("div").css('cursor','url(http://w17.snunit.k12.il/images/big_arrow.png),auto');
+            $("body").css("cursor", "progress");
+            var range = this.value //alert(this.value);
+
+            $('#graph-body img').each(function(){
+                var src_name = $(this).attr('src');          
+                var src_name = src_name.replace("7day/", "");
+                var src_name = src_name.replace("14day/", "");
+                var src_name = src_name.replace("6week/", "");
+                var src_new =src_name +  range + '/'
+                $(this).attr("src", src_new);
+
+                
+                var href_old = $('#changeurl').attr("href");
+                var href_old = href_old.replace("7day/", "");
+                var href_old = href_old.replace("14day/", "");
+                var href_old = href_old.replace("6week/", "");
+                var href_new =href_old +  range + '/'
+                $('#changeurl').attr("href", href_new);
+            });
+            // $('body').css('cursor','auto');
+            // $("div").css('cursor','auto');
+            $("body").css("cursor", "auto");
+
+            $('#head-title h3').text( "Production data : Last " + range );
+        });
+
+
+      function ajaxindicatorstart(text)
+{
+  if(jQuery('body').find('#resultLoading').attr('id') != 'resultLoading'){
+  jQuery('body').append('<div id="resultLoading" style="display:none"><div><img src="ajax-loader.gif"><div>'+text+'</div></div><div class="bg"></div></div>');
+  }
+
+  jQuery('#resultLoading').css({
+    'width':'100%',
+    'height':'100%',
+    'position':'fixed',
+    'z-index':'10000000',
+    'top':'0',
+    'left':'0',
+    'right':'0',
+    'bottom':'0',
+    'margin':'auto'
+  });
+
+  jQuery('#resultLoading .bg').css({
+    'background':'#000000',
+    'opacity':'0.7',
+    'width':'100%',
+    'height':'100%',
+    'position':'absolute',
+    'top':'0'
+  });
+
+  jQuery('#resultLoading>div:first').css({
+    'width': '250px',
+    'height':'75px',
+    'text-align': 'center',
+    'position': 'fixed',
+    'top':'0',
+    'left':'0',
+    'right':'0',
+    'bottom':'0',
+    'margin':'auto',
+    'font-size':'16px',
+    'z-index':'10',
+    'color':'#ffffff'
+
+  });
+
+    jQuery('#resultLoading .bg').height('100%');
+       jQuery('#resultLoading').fadeIn(300);
+    jQuery('body').css('cursor', 'wait');
+}
+
+function ajaxindicatorstop()
+{
+    jQuery('#resultLoading .bg').height('100%');
+       jQuery('#resultLoading').fadeOut(300);
+    jQuery('body').css('cursor', 'default');
+}
+
+jQuery(document).ajaxStart(function () {
+    //show ajax indicator
+ajaxindicatorstart('loading data.. please wait..');
+}).ajaxStop(function () {
+//hide ajax indicator
+ajaxindicatorstop();
+});
+      
+      </script>
+
+      
+
+        {% endblock java_content %}

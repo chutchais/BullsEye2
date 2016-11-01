@@ -1,0 +1,330 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="col-md-6">
+                  <h3>{{data.title}}<small></small></h3>
+                </div>
+              </div>
+                <div class="col-md-6" class="pull-right">
+                <form action="" method="post" class="form-horizontal form-label-left">
+                {% csrf_token %}
+                    <!-- {{ form.as_p}} -->
+                    <!-- Date -->
+                    <div class="form-group">
+                      <label class="control-label col-md-3 col-sm-3 col-xs-12">Start Date</label>
+                        <div class="col-md-9 col-sm-9 col-xs-12">
+                          <div class="col-md-11 xdisplay_inputx form-group has-feedback">
+                             <input type="text" class="form-control has-feedback-left" id="id_start_date" placeholder="Start Date" aria-describedby="inputSuccess2Status4">
+                             <span class="fa fa-calendar-o form-control-feedback left" aria-hidden="true"></span>
+                             <span id="inputSuccess2Status4" class="sr-only">(success)</span>
+                          </div>
+                      </div>
+                      <label class="control-label col-md-3 col-sm-3 col-xs-12">Stop Date</label>
+                        <div class="col-md-9 col-sm-9 col-xs-12">
+                          <div class="col-md-11 xdisplay_inputx form-group has-feedback">
+                             <input type="text" class="form-control has-feedback-left" id="id_end_date" placeholder="End Date" aria-describedby="inputSuccess2Status4">
+                             <span class="fa fa-calendar-o form-control-feedback left" aria-hidden="true"></span>
+                             <span id="inputSuccess2Status4" class="sr-only">(success)</span>
+                          </div>
+                      </div>
+                    </div>
+
+                 
+                    <!-- Family -->
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">Family</label>
+                        <div class="col-md-9 col-sm-9 col-xs-12">
+                          <select class="form-control" name="family" id="family">
+                          {% for choice in form.family.field.choices %}
+                            <option>{{choice.1}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+
+                    <!-- Station -->
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">Station</label>
+                        <div class="col-md-9 col-sm-9 col-xs-12">
+                          <select class="form-control" name="station" id="station">
+                          {% for choice in form.station.field.choices %}
+                            <option value={{choice.0}}>{{choice.0}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+
+                    <!-- product -->
+                          <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">Product</label>
+                        <div class="col-md-9 col-sm-9 col-xs-12">
+                          <select class="select2_single form-control" tabindex="-1" name="product" id="product">
+                            <option></option>
+                            {% for choice in form.product.field.choices %}
+                            <option value={{choice.0}}>{{choice.0}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+
+
+                    <!-- Parameter -->
+                          <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">Parameter</label>
+                        <div class="col-md-9 col-sm-9 col-xs-12">
+                          <select class="select2_single form-control" tabindex="-1" name="parameter" id="parameter">
+                            <option></option>
+                            {% for choice in form.parameter.field.choices %}
+                            <option value={{choice.1}}>{{choice.1}}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                      </form>
+                      <div class="form-group">
+                        <input id ="btnGraph" type="submit" value="Show Graph" />
+                      </div>
+
+
+
+                    
+                </div>
+              <!-- <div class="title_right">
+                <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for...">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+                  </div>
+                </div>
+              </div> -->
+            </div>
+
+           <!--  <div class="clearfix"></div> -->
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+              <div class="dashboard_graph">
+              <!-- Tittle -->
+                <div class="row x_title">
+                  <div class="col-md-6">
+                    <h3>Statistic Graphs<small></small></h3>
+                  </div>
+                  <div class="col-md-6">
+
+                  </div>
+                </div>
+              <!-- End Tittle -->
+              </div>
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                  <img class="img-responsive" id ="imgGraph" src="" alt="..." class="">
+              </div>
+            </div>
+        </div>
+
+
+
+          <div class="row">
+
+        
+
+
+                </div>
+
+                <div class="clearfix"></div>
+              </div>
+            </div>
+
+          </div>
+          <!-- end section -->
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /page content -->
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+        <script>
+    $(function(){
+
+
+    //Text Box
+      $('#id_start_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+       $('#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+       });
+      </script>
+
+      <script>
+      $(document).ready(function() {
+         // $( "#id_start_date" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+        $('#id_start_date').daterangepicker({
+          dateFormat: 'YYYY-MM-DD',
+          singleDatePicker: true,
+          calender_style: "picker_2"
+        }, function(start, end, label) {
+          console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $( "#id_end_date" ).daterangepicker( "option", "dateFormat", "yy-mm-dd" );
+        $('#id_end_date').daterangepicker({
+          locale: {
+              format: 'YYYY-MM-DD'
+            },
+          singleDatePicker: true,
+          calender_style: "picker_2"
+
+        }, function(start, end, label) {
+          console.log(start.toISOString(), end.toISOString(), label);
+        });
+        $('#single_cal3').daterangepicker({
+          singleDatePicker: true,
+          calender_style: "picker_3"
+        }, function(start, end, label) {
+          console.log(start.toISOString(), end.toISOString(), label);
+        });
+        $('#single_cal4').daterangepicker({
+          singleDatePicker: true,
+          calender_style: "picker_4"
+        }, function(start, end, label) {
+          console.log(start.toISOString(), end.toISOString(), label);
+        });
+      });
+    </script>
+
+    <script>
+          // this initializes the dialog (and uses some common options that I do)
+          
+
+          $(document).ready(function(){
+
+            $( "#btnGraph" ).click(function() {
+              //get Date Start and Stop
+              var date_start = $("#id_start_date").datepicker({ dateFormat: 'yyyy-MM-dd' }).val();
+              var new_date_start =date_start.split("/")[2] + '-' + date_start.split("/")[0] + '-' +date_start.split("/")[1]
+              var date_stop = $("#id_end_date").datepicker({ dateFormat: 'yyyy-MM-dd' }).val();
+              var new_date_stop =date_stop.split("/")[2] + '-' + date_stop.split("/")[0] + '-' +date_stop.split("/")[1]
+              
+              //get Family
+              var family = $( "#family option:selected" ).val();
+              //get Station
+              var station = $( "#station option:selected" ).val();
+              //get Parameter
+              var parameter = $( "#parameter option:selected" ).val();
+
+
+              
+
+              var url = '/dashboard/graph/histogram/'+ family +'/' + station + '/'+ new_date_start 
+                        + '/'+ new_date_stop + '/'+ parameter + '/';
+              //alert (url)
+              $("*").css("cursor", "progress");
+              $.ajax({ 
+                  url : url, 
+                  cache: true,
+                  processData : false,
+              }).always(function(){
+                  $("#imgGraph").attr("src", url).fadeIn();
+              }); 
+              $("*").css("cursor", "default");
+            });
+
+            //Start Family change
+            $('#family').on('change', function() {
+              //alert( this.value ); // or $(this).val()
+              family_id = this.value;
+              request_url = 'get_station/' + family_id + '/';
+
+              //clear parameter
+              $('#parameter')
+                        .find('option')
+                        .remove()
+                        .end()
+                      ;
+
+              //Get Stations
+              $.get(request_url, function(data, status){
+                  var parsed = $.parseJSON(data);
+                  //alert("Data: " + data + "\nStatus: " + status);
+                      $('#station')
+                        .find('option')
+                        .remove()
+                        .end()
+                      ;
+                  $.each(parsed, function (station, name) {
+                      $('#station').append('<option value=' + station + '>' + station + ' : ' + name +'</option>');
+                  });
+              });
+              //Get Product
+              request_url = 'get_product/' + family_id + '/';
+              $.get(request_url, function(data, status){
+                  var parsed = $.parseJSON(data);
+                  //alert("Data: " + data + "\nStatus: " + status);
+                      $('#product')
+                        .find('option')
+                        .remove()
+                        .end()
+                      ;
+                  $.each(parsed, function (product, name) {
+                      $('#product').append('<option value="' + product + '">' + product + ' : ' + name +'</option>');
+                  });
+              });
+              //End get Product
+            });
+            //End Family change
+
+            $('#station').on('change', function() {
+              //Start get Parameter
+              request_url = 'get_parameter/' + this.value + '/';
+              $.get(request_url, function(data, status){
+                  var parsed = $.parseJSON(data);
+                  //alert("Data: " + data + "\nStatus: " + status);
+                      $('#parameter')
+                        .find('option')
+                        .remove()
+                        .end()
+                      ;
+                  $.each(parsed, function (parameter, name) {
+                      $('#parameter').append('<option value="' + parameter + '">' + parameter +'</option>');
+                  });
+              });
+              //End get Parameter
+
+            });
+          });
+    </script>
+
+      
+
+        {% endblock java_content %}

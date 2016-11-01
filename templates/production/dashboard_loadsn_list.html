@@ -1,0 +1,193 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<!-- page content -->
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              <div class="title_left">
+                <h3>{{data.title}}  : {{ data.date }}<small> - show details for today </small></h3>
+              </div>
+
+              <div class="title_right">
+                <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for...">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="row">
+
+                          <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>Serial Number list <small>details</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Settings 1</a>
+                          </li>
+                          <li><a href="#">Settings 2</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <!-- <p class="text-muted font-13 m-b-30">
+                      This example shows FixedHeader being styling by the Bootstrap CSS framework.
+                    </p> -->
+                    <table id="datatable-fixed-header" class="table table-striped table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Serial Number</th>
+                          <th>WorkOrder</th>
+                          <th>Product</th>
+                          <th>Family</th>
+                          <th>Registered Date</th>
+                          <th>Last Update</th>
+                          <th>Aging</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+
+
+                      <tbody>
+                      {% for item in data.sn_list %}
+                        <tr>
+                          <td><a href="/dashboard/sn/{{item.sn_wo.sn}}">{{item.sn_wo.sn}}</a></td>
+                          <td>{{item.sn_wo.workorder.name}}</td>
+                          <td>{{item.sn_wo.workorder.product}}</td>
+                          <td>{{item.sn_wo.workorder.product.family}}</td>
+                          <td>{{item.started_date}}</td>
+                          <td>{{item.sn_wo.modified_date}}</td>
+                          <td>{{item.sn_wo.created_date|timesince}}</td>
+                          <td>{{ item.sn_wo.status }}</td>
+                        </tr>
+                      {% endfor %}
+
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /page content -->
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+
+        <script>
+      $(document).ready(function() {
+        var handleDataTableButtons = function() {
+          if ($("#datatable-buttons").length) {
+            $("#datatable-buttons").DataTable({
+              dom: "Bfrtip",
+              buttons: [
+                {
+                  extend: "copy",
+                  className: "btn-sm"
+                },
+                {
+                  extend: "csv",
+                  className: "btn-sm"
+                },
+                {
+                  extend: "excel",
+                  className: "btn-sm"
+                },
+                {
+                  extend: "pdfHtml5",
+                  className: "btn-sm"
+                },
+                {
+                  extend: "print",
+                  className: "btn-sm"
+                },
+              ],
+              responsive: true
+            });
+          }
+        };
+
+        TableManageButtons = function() {
+          "use strict";
+          return {
+            init: function() {
+              handleDataTableButtons();
+            }
+          };
+        }();
+
+        $('#datatable').dataTable();
+
+        $('#datatable-keytable').DataTable({
+          keys: true
+        });
+
+        $('#datatable-responsive').DataTable();
+
+        $('#datatable-scroller').DataTable({
+          ajax: "js/datatables/json/scroller-demo.json",
+          deferRender: true,
+          scrollY: 380,
+          scrollCollapse: true,
+          scroller: true
+        });
+
+        $('#datatable-fixed-header').DataTable({
+          fixedHeader: true
+        });
+
+        var $datatable = $('#datatable-checkbox');
+
+        $datatable.dataTable({
+          'order': [[ 1, 'asc' ]],
+          'columnDefs': [
+            { orderable: false, targets: [0] }
+          ]
+        });
+        $datatable.on('draw.dt', function() {
+          $('input').iCheck({
+            checkboxClass: 'icheckbox_flat-green'
+          });
+        });
+
+        TableManageButtons.init();
+      });
+    </script>
+
+        {% endblock java_content %}

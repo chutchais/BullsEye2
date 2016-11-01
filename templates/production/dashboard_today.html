@@ -1,0 +1,1342 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<div class="right_col" role="main">
+          <!-- top tiles -->
+          <div class="row tile_count">
+            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-tags"></i> Today Input</span>
+              <div class="count">{{data.total_input}}</div>
+              <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>80% </i> From today plan</span>
+            </div>
+            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-user"></i> Today Output</span>
+              <div class="count">{{data.total_output}}</div>
+              <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>12% </i> From yesterday</span>
+            </div>
+            <!-- <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-clock-o"></i> ETE Yield</span>
+              <div class="count">{{data.ete_yield|floatformat:2}} %</div>
+              <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>90% </i> From Target yield</span>
+            </div> -->
+            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-user"></i> Today Scraped</span>
+              <div class="count">{{data.total_scrapped}}</div>
+              <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>12% </i> From yesterday</span>
+            </div>
+           
+
+            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-user"></i> Today Shipped</span>
+              <div class="count">{{data.shipped}}</div>
+              <span class="count_bottom"><i class="red"><i class="fa fa-sort-desc"></i>12% </i> From yesterday</span>
+            </div>
+
+             <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-user"></i> WIP</span>
+              <div class="count green">{{data.wip}}</div>
+              <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>86% </i> From Target</span>
+            </div>
+            
+            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+              <span class="count_top"><i class="fa fa-user"></i> On Stock</span>
+              <div class="count">{{data.stock}}</div>
+              <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>9% </i> From yesterday</span>
+            </div>
+            
+          </div>
+          <!-- /top tiles -->
+
+          <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+              <div class="dashboard_graph">
+
+                <div class="row x_title">
+                  <div class="col-md-6">
+                    <h3>Weekly Process Performance <small>on {{data.title}}</small></h3>
+                  </div>
+                  <div class="col-md-6">
+                    <!-- <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                      <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                      <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                    </div> -->
+                    <!--  Start to test datetime -->
+                   <!--  <div id="reportrange2" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                      <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                      <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                    </div> -->
+<!--                     <form id="eventForm" method="post" class="form-horizontal">
+                                       <div class="form-group">
+                            <label class="col-xs-3 control-label">Date</label>
+                            <div class="col-xs-5 date">
+                                <div class="input-group input-append date" id="reportrange2">
+                                    <input type="text" class="form-control" name="date" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                       
+                            <div class="col-xs-5 col-xs-offset-3">
+                                <button type="submit" class="btn btn-default">Validate</button>
+                            </div>
+                        </div>
+                    </form> -->
+                    <form action="" method="post">
+                {% csrf_token %}
+                    {{ form }}
+                    <input type="submit" value="Show!!" />
+                </form>
+                    
+                  </div>
+                </div>
+
+                <div class="col-md-9 col-sm-9 col-xs-12">
+                  <div id="placeholder33" style="height: 260px; display: none" class="demo-placeholder"></div>
+                  <div style="width: 100%;">
+                    <div id="canvas_dahs" class="demo-placeholder" style="width: 100%; height:270px;"></div>
+                  </div>
+                </div>
+      
+
+
+
+                <div class="col-md-3 col-sm-3 col-xs-12 bg-white">
+                  <div class="x_title">
+                    <h2>Top Process Performance</h2>
+                    <div class="clearfix"></div>
+                  </div>
+
+                  <div class="col-md-12 col-sm-12 col-xs-6">
+                    <div>
+                      <p>CFP Tester</p>
+                      <div class="">
+                        <div class="progress progress_sm" style="width: 76%;">
+                          <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="80"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p>Optical Solder Assembly</p>
+                      <div class="">
+                        <div class="progress progress_sm" style="width: 76%;">
+                          <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="60"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-12 col-sm-12 col-xs-6">
+                    <div>
+                      <p>Optical Calibration/FVT</p>
+                      <div class="">
+                        <div class="progress progress_sm" style="width: 76%;">
+                          <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="40"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p>Environment stress Pretest/EPT</p>
+                      <div class="">
+                        <div class="progress progress_sm" style="width: 76%;">
+                          <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="50"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <p>Optical Bench Test (OBT)</p>
+                      <div class="">
+                        <div class="progress progress_sm" style="width: 76%;">
+                          <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="30"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="clearfix"></div>
+              </div>
+            </div>
+
+          </div>
+          <br />
+
+          <div class="row">
+
+          <!-- Start Load by Product -->
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <div class="x_panel tile fixed_height_320">
+                <div class="x_title">
+                  <h2>Today Input (New Loading)</h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="/dashboard/status/NEW/{{ data.date }}/details">More Details</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <b>Total : {{data.total_input}}</b>
+
+                  {% for p in data.input_details|dictsortreversed:"number" %}
+
+                  {%percent data.total_input p.number as percent_data %}
+                  <div class="widget_summary">
+                    <div class="w_left w_25">
+                      <span>{{p.name}}</span>
+                    </div>
+                    <div class="w_center w_55">
+                      <div class="progress">
+                        <div class="progress-bar bg-green" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: {{percent_data}}%;">
+                          <span class="sr-only">60% Complete</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="w_right w_20">
+                      <span>{{p.number}}</span>
+                    </div>
+                    <div class="clearfix"></div>
+                  </div>
+                  {% endfor %}
+                  
+                </div>
+              </div>
+            </div>
+            <!-- #End Load by Product -->
+
+            <!-- Start Output by Product -->
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <div class="x_panel tile fixed_height_320">
+                <div class="x_title">
+                  <h2>Today Output(completed)</h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="/dashboard/status/DONE/{{ data.date }}/details">More Details</a>
+                        </li>
+                        
+                      </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <b>Total : {{data.total_output}}</b>
+
+                  {% for p in data.output_details|dictsortreversed:"number" %}
+
+                  {%percent data.total_output p.number as percent_data %}
+                  <div class="widget_summary">
+                    <div class="w_left w_25">
+                      <span>{{p.name}}</span>
+                    </div>
+                    <div class="w_center w_55">
+                      <div class="progress">
+                        <div class="progress-bar bg-green" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: {{percent_data}}%;">
+                          <span class="sr-only">60% Complete</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="w_right w_20">
+                      <span>{{p.number}}</span>
+                    </div>
+                    <div class="clearfix"></div>
+                  </div>
+                  {% endfor %}
+                  
+                </div>
+              </div>
+            </div>
+            <!-- #End Output by Product -->
+
+            <!-- Start Shipped by Product -->
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <div class="x_panel tile fixed_height_320">
+                <div class="x_title">
+                  <h2>Today Shipment</h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="/dashboard/status/SHIPPED/{{ data.date }}/details">More Details</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <b>Total : {{data.shipped}}</b>
+
+                  {% for p in data.shipped_details|dictsortreversed:"number" %}
+
+                  {%percent data.shipped p.number as percent_data %}
+                  <div class="widget_summary">
+                    <div class="w_left w_25">
+                      <span>{{p.name}}</span>
+                    </div>
+                    <div class="w_center w_55">
+                      <div class="progress">
+                        <div class="progress-bar bg-green" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: {{percent_data}}%;">
+                          <span class="sr-only">60% Complete</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="w_right w_20">
+                      <span>{{p.number}}</span>
+                    </div>
+                    <div class="clearfix"></div>
+                  </div>
+                  {% endfor %}
+                  
+                </div>
+              </div>
+            </div>
+            <!-- #End Shipped by Product -->
+
+            <!-- Yield Report (Top 5)bar chart -->
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="x_panel tile fixed_height_320 overflow_hidden">
+                  <div class="x_title">
+                    <h2>Today Fresh Yield Report<small>first passed yield</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="#">Full details</a>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <div id="graph_bar" style="width:100%; height:250px;"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- /bar charts -->
+
+
+            <!-- WIP -->
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <div class="x_panel tile fixed_height_320 overflow_hidden">
+                <div class="x_title">
+                  <h2>Current WIP Status <small>Total : {{ data.wip}}</small></h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                      <ul class="dropdown-menu" role="menu">
+                        <!-- <li><a href="/dashboard/status/IN/{{ data.date }}/details">More Details</a>
+                        </li> -->
+                        <li><a href="/dashboard/wip/IN/">More Details</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+
+                  <table class="" style="width:100%">
+                    <tr>
+                      <th style="width:37%;">
+                        <p>All product family</p>
+                      </th>
+                      <th>
+                        <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7">
+                          <p class="">Device</p>
+                        </div>
+                        <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                          <p class="">Progress</p>
+                        </div>
+                      </th>
+                    </tr>
+                    <tr>
+                      <td>
+                        <canvas id="canvas1" height="140" width="140" style="margin: 15px 10px 10px 0"></canvas>
+                      </td>
+                      <td>
+
+                        <table class="tile_info">
+                          {% for item in data.wip_details|dictsortreversed:"number" %}
+                            
+             
+                          <tr>
+                            <td>
+                              <p><i class="fa fa-square blue"></i>{{ item.workorder__product__family__name }} </p>
+                            </td>
+                            <td>{{ item.number }}</td>
+                          </tr>
+                           {% endfor %}
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- End WIP -->
+
+            <!-- pie chart WIP-->
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="x_panel  tile fixed_height_320 overflow_hidden">
+                  <div class="x_title">
+                    <h2>WIP by Family <small>Total : {{ data.wip}}</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/wip/IN/">More Details</a>
+                        </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content2">
+                    <div id="graph_donut" style="width:100%; height:250px;"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- /Pie chart WIP-->
+
+
+                          <!-- pie chart Stock-->
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="x_panel  tile fixed_height_320 overflow_hidden">
+                  <div class="x_title">
+                    <h2>Stock by Family <small>Total : {{ data.stock}}</small></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                      <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                      </li>
+                      <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                          <li><a href="/dashboard/wip/DONE/">More Details</a>
+                        </li>
+                        </ul>
+                      </li>
+                      <li><a class="close-link"><i class="fa fa-close"></i></a>
+                      </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content2">
+                    <div id="graph_donut_stock" style="width:100%; height:250px;"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- /Pie chart stock-->
+
+            <!-- <div class="col-md-4 col-sm-4 col-xs-12">
+              <div class="x_panel tile fixed_height_320">
+                <div class="x_title">
+                  <h2>Quick Settings</h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="#">Settings 1</a>
+                        </li>
+                        <li><a href="#">Settings 2</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <div class="dashboard-widget-content">
+                    <ul class="quick-list">
+                      <li><i class="fa fa-calendar-o"></i><a href="#">Settings</a>
+                      </li>
+                      <li><i class="fa fa-bars"></i><a href="#">Subscription</a>
+                      </li>
+                      <li><i class="fa fa-bar-chart"></i><a href="#">Auto Renewal</a> </li>
+                      <li><i class="fa fa-line-chart"></i><a href="#">Achievements</a>
+                      </li>
+                      <li><i class="fa fa-bar-chart"></i><a href="#">Auto Renewal</a> </li>
+                      <li><i class="fa fa-line-chart"></i><a href="#">Achievements</a>
+                      </li>
+                      <li><i class="fa fa-area-chart"></i><a href="#">Logout</a>
+                      </li>
+                    </ul>
+
+                    <div class="sidebar-widget">
+                      <h4>Profile Completion</h4>
+                      <canvas width="150" height="80" id="foo" class="" style="width: 160px; height: 100px;"></canvas>
+                      <div class="goal-wrapper">
+                        <span class="gauge-value pull-left">$</span>
+                        <span id="gauge-text" class="gauge-value pull-left">3,200</span>
+                        <span id="goal-text" class="goal-value pull-right">$5,000</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <div class="x_panel">
+                <div class="x_title">
+                  <h2>Recent Activities <small>Sessions</small></h2>
+                  <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="#">Settings 1</a>
+                        </li>
+                        <li><a href="#">Settings 2</a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                  </ul>
+                  <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                  <div class="dashboard-widget-content">
+
+                    <ul class="list-unstyled timeline widget">
+                      <li>
+                        <div class="block">
+                          <div class="block_content">
+                            <h2 class="title">
+                                              <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                          </h2>
+                            <div class="byline">
+                              <span>13 hours ago</span> by <a>Jane Smith</a>
+                            </div>
+                            <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="block">
+                          <div class="block_content">
+                            <h2 class="title">
+                                              <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                          </h2>
+                            <div class="byline">
+                              <span>13 hours ago</span> by <a>Jane Smith</a>
+                            </div>
+                            <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="block">
+                          <div class="block_content">
+                            <h2 class="title">
+                                              <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                          </h2>
+                            <div class="byline">
+                              <span>13 hours ago</span> by <a>Jane Smith</a>
+                            </div>
+                            <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="block">
+                          <div class="block_content">
+                            <h2 class="title">
+                                              <a>Who Needs Sundance When You’ve Got&nbsp;Crowdfunding?</a>
+                                          </h2>
+                            <div class="byline">
+                              <span>13 hours ago</span> by <a>Jane Smith</a>
+                            </div>
+                            <p class="excerpt">Film festivals used to be do-or-die moments for movie makers. They were where you met the producers that could fund your project, and if the buyers liked your flick, they’d pay to Fast-forward and… <a>Read&nbsp;More</a>
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-md-8 col-sm-8 col-xs-12">
+
+
+
+              <div class="row">
+
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>Visitors location <small>geo-presentation</small></h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                      <div class="dashboard-widget-content">
+                        <div class="col-md-4 hidden-small">
+                          <h2 class="line_30">125.7k Views from 60 countries</h2>
+
+                          <table class="countries_list">
+                            <tbody>
+                              <tr>
+                                <td>United States</td>
+                                <td class="fs15 fw700 text-right">33%</td>
+                              </tr>
+                              <tr>
+                                <td>France</td>
+                                <td class="fs15 fw700 text-right">27%</td>
+                              </tr>
+                              <tr>
+                                <td>Germany</td>
+                                <td class="fs15 fw700 text-right">16%</td>
+                              </tr>
+                              <tr>
+                                <td>Spain</td>
+                                <td class="fs15 fw700 text-right">11%</td>
+                              </tr>
+                              <tr>
+                                <td>Britain</td>
+                                <td class="fs15 fw700 text-right">10%</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div id="world-map-gdp" class="col-md-8 col-sm-12 col-xs-12" style="height:230px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="row">
+
+
+                <!-- Start to do list -->
+                <!--
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>To Do List <small>Sample tasks</small></h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+
+                      <div class="">
+                        <ul class="to_do">
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Schedule meeting with new client </p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Create email address for new intern</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Have IT fix the network printer</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Copy backups to offsite location</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Food truck fixie locavors mcsweeney</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Food truck fixie locavors mcsweeney</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Create email address for new intern</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Have IT fix the network printer</p>
+                          </li>
+                          <li>
+                            <p>
+                              <input type="checkbox" class="flat"> Copy backups to offsite location</p>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- End to do list -->
+                
+                <!-- start of weather widget -->
+                <!-- <div class="col-md-6 col-sm-6 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>Daily active users <small>Sessions</small></h2>
+                      <ul class="nav navbar-right panel_toolbox">
+                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li class="dropdown">
+                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                          </ul>
+                        </li>
+                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                      </ul>
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="temperature"><b>Monday</b>, 07:30 AM
+                            <span>F</span>
+                            <span><b>C</b></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-4">
+                          <div class="weather-icon">
+                            <canvas height="84" width="84" id="partly-cloudy-day"></canvas>
+                          </div>
+                        </div>
+                        <div class="col-sm-8">
+                          <div class="weather-text">
+                            <h2>Texas <br><i>Partly Cloudy Day</i></h2>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-12">
+                        <div class="weather-text pull-right">
+                          <h3 class="degrees">23</h3>
+                        </div>
+                      </div>
+
+                      <div class="clearfix"></div>
+
+                      <div class="row weather-days">
+                        <div class="col-sm-2">
+                          <div class="daily-weather">
+                            <h2 class="day">Mon</h2>
+                            <h3 class="degrees">25</h3>
+                            <canvas id="clear-day" width="32" height="32"></canvas>
+                            <h5>15 <i>km/h</i></h5>
+                          </div>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="daily-weather">
+                            <h2 class="day">Tue</h2>
+                            <h3 class="degrees">25</h3>
+                            <canvas height="32" width="32" id="rain"></canvas>
+                            <h5>12 <i>km/h</i></h5>
+                          </div>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="daily-weather">
+                            <h2 class="day">Wed</h2>
+                            <h3 class="degrees">27</h3>
+                            <canvas height="32" width="32" id="snow"></canvas>
+                            <h5>14 <i>km/h</i></h5>
+                          </div>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="daily-weather">
+                            <h2 class="day">Thu</h2>
+                            <h3 class="degrees">28</h3>
+                            <canvas height="32" width="32" id="sleet"></canvas>
+                            <h5>15 <i>km/h</i></h5>
+                          </div>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="daily-weather">
+                            <h2 class="day">Fri</h2>
+                            <h3 class="degrees">28</h3>
+                            <canvas height="32" width="32" id="wind"></canvas>
+                            <h5>11 <i>km/h</i></h5>
+                          </div>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="daily-weather">
+                            <h2 class="day">Sat</h2>
+                            <h3 class="degrees">26</h3>
+                            <canvas height="32" width="32" id="cloudy"></canvas>
+                            <h5>10 <i>km/h</i></h5>
+                          </div>
+                        </div>
+                        <div class="clearfix"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>--> 
+
+                <!-- end of weather widget --> 
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+    <!-- EChart line-->
+    <script>
+    var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+
+      echartLine.setOption({
+        title: {
+          text: 'Line Graph',
+          subtext: 'Subtitle'
+        },
+        tooltip: {
+          trigger: 'axis'
+        },
+        legend: {
+          x: 220,
+          y: 40,
+          data: ['Intent', 'Pre-order', 'Deal']
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            magicType: {
+              show: true,
+              title: {
+                line: 'Line',
+                bar: 'Bar',
+                stack: 'Stack',
+                tiled: 'Tiled'
+              },
+              type: ['line', 'bar', 'stack', 'tiled']
+            },
+            restore: {
+              show: true,
+              title: "Restore"
+            },
+            saveAsImage: {
+              show: true,
+              title: "Save Image"
+            }
+          }
+        },
+        calculable: true,
+        xAxis: [{
+          type: 'category',
+          boundaryGap: false,
+          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        }],
+        yAxis: [{
+          type: 'value'
+        }],
+        series: [{
+          name: 'Deal',
+          type: 'line',
+          smooth: true,
+          itemStyle: {
+            normal: {
+              areaStyle: {
+                type: 'default'
+              }
+            }
+          },
+          data: [10, 12, 21, 54, 260, 830, 710]
+        }, {
+          name: 'Pre-order',
+          type: 'line',
+          smooth: true,
+          itemStyle: {
+            normal: {
+              areaStyle: {
+                type: 'default'
+              }
+            }
+          },
+          data: [30, 182, 434, 791, 390, 30, 10]
+        }, {
+          name: 'Intent',
+          type: 'line',
+          smooth: true,
+          itemStyle: {
+            normal: {
+              areaStyle: {
+                type: 'default'
+              }
+            }
+          },
+          data: [1320, 1132, 601, 234, 120, 90, 20]
+        }]
+      });
+      </script>
+    <!-- End Echart line -->
+               <!-- Flot -->
+    <script>
+      $(document).ready(function() {
+        var data1 = [
+          [gd(2016, 7, 21), 17],
+          [gd(2016, 7, 22), 74],
+          [gd(2016, 7, 23), 6],
+          [gd(2016, 7, 24), 39],
+          [gd(2016, 7, 25), 20],
+          [gd(2016, 7, 26), 85],
+          [gd(2016, 7, 27), 7]
+        ];
+
+        var data2 = [
+          [gd(2016, 7, 21), 82],
+          [gd(2016, 7, 22), 23],
+          [gd(2016, 7, 23), 66],
+          [gd(2016, 7, 24), 9],
+          [gd(2016, 7, 25), 119],
+          [gd(2016, 7, 26), 6],
+          [gd(2016, 7, 27), 9]
+        ];
+
+        var data3 = [
+          [gd(2016, 7, 21), 50],
+          [gd(2016, 7, 22), 12],
+          [gd(2016, 7, 23), 90],
+          [gd(2016, 7, 24), 1],
+          [gd(2016, 7, 25), 140],
+          [gd(2016, 7, 26), 60],
+          [gd(2016, 7, 27), 45]
+        ];
+        $("#canvas_dahs").length && $.plot($("#canvas_dahs"), [
+          data1, data2 ,data3
+        ], {
+          series: {
+            lines: {
+              show: false,
+              fill: true
+            },
+            splines: {
+              show: true,
+              tension: 0.4,
+              lineWidth: 1,
+              fill: 0.4
+            },
+            points: {
+              radius: 0,
+              show: true
+            },
+            shadowSize: 2
+          },
+          grid: {
+            verticalLines: true,
+            hoverable: true,
+            clickable: true,
+            tickColor: "#d5d5d5",
+            borderWidth: 1,
+            color: '#fff'
+          },
+          colors: ["rgba(38, 185, 154, 0.38)", "rgba(3, 88, 106, 0.38)"],
+          xaxis: {
+            tickColor: "rgba(51, 51, 51, 0.06)",
+            mode: "time",
+            tickSize: [1, "day"],
+            //tickLength: 10,
+            axisLabel: "Date",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Verdana, Arial',
+            axisLabelPadding: 10
+          },
+          yaxis: {
+            ticks: 8,
+            tickColor: "rgba(51, 51, 51, 0.06)",
+          },
+          tooltip: false
+        });
+
+        function gd(year, month, day) {
+          return new Date(year, month - 1, day).getTime();
+        }
+      });
+    </script>
+    <!-- /Flot -->
+   
+
+    <!-- JQVMap -->
+    <script>
+      $(document).ready(function(){
+        $('#world-map-gdp').vectorMap({
+            map: 'world_en',
+            backgroundColor: null,
+            color: '#ffffff',
+            hoverOpacity: 0.7,
+            selectedColor: '#666666',
+            enableZoom: true,
+            showTooltip: true,
+            values: sample_data,
+            scaleColors: ['#E6F2F0', '#149B7E'],
+            normalizeFunction: 'polynomial'
+        });
+      });
+    </script>
+    <!-- /JQVMap -->
+
+    <!-- Skycons -->
+    <script>
+      $(document).ready(function() {
+        var icons = new Skycons({
+            "color": "#73879C"
+          }),
+          list = [
+            "clear-day", "clear-night", "partly-cloudy-day",
+            "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+            "fog"
+          ],
+          i;
+
+        for (i = list.length; i--;)
+          icons.set(list[i], list[i]);
+
+        icons.play();
+      });
+    </script>
+    <!-- /Skycons -->
+
+    <!-- Moris Pie , WIP -->
+    <script>
+    Morris.Donut({
+          element: 'graph_donut',
+          // data: [
+          //   {label: 'Jam', value: 25},
+          //   {label: 'Frosted', value: 40},
+          //   {label: 'Custard', value: 25},
+          //   {label: 'Sugar', value: 10}
+          // ],
+          data: [
+          {% for item in data.wip_details %}
+                 { label:'{{item.workorder__product__family__name}}',value:{{ item.number}} },
+          {% endfor %}
+          ],
+          // colors: ['#26B99A', '#34495E', '#ACADAC', '#3498DB'],
+          formatter: function (y) {
+            return y ;//+ "%";
+          },
+          resize: true
+        });
+        </script>
+    <!-- End Moris Pie ,WIP -->
+
+    <!-- Moris Pie , Stock -->
+    <script>
+    Morris.Donut({
+          element: 'graph_donut_stock',
+          // data: [
+          //   {label: 'Jam', value: 25},
+          //   {label: 'Frosted', value: 40},
+          //   {label: 'Custard', value: 25},
+          //   {label: 'Sugar', value: 10}
+          // ],
+          data: [
+          {% for item in data.stock_details %}
+                 { label:'{{item.workorder__product__family__name}}',value:{{ item.number}} },
+          {% endfor %}
+          ],
+          // colors: ['#26B99A', '#34495E', '#ACADAC', '#3498DB'],
+          formatter: function (y) {
+            return y ;//+ "%";
+          },
+          resize: true
+        });
+        </script>
+    <!-- End Moris Pie ,WIP -->
+
+
+
+
+
+    <!-- Doughnut Chart -->
+    <script>
+      $(document).ready(function(){
+        var options = {
+          legend: false,
+          responsive: false
+        };
+
+        new Chart(document.getElementById("canvas1"), {
+          type: 'doughnut',
+          tooltipFillColor: "rgba(51, 51, 51, 0.55)",
+
+          data: {
+            labels: [
+              {% for item in data.wip_details %}
+                "{{item.workorder__product__family__name}}",
+              {% endfor %}
+            ],
+            datasets: [{
+              data: [
+              {% for item in data.wip_details %}
+                {{item.number}},
+              {% endfor %}
+              ],
+
+              backgroundColor: [
+                "#BDC3C7",
+                "#9B59B6",
+                "#E74C3C",
+                "#26B99A",
+                "#3498DB",
+                "#BDC3C7",
+                "#9B59B6",
+                "#E74C3C",
+                "#26B99A",
+                "#3498DB"
+              ],
+              hoverBackgroundColor: [
+                "#CFD4D8",
+                "#B370CF",
+                "#E95E4F",
+                "#36CAAB",
+                "#49A9EA",
+                "#CFD4D8",
+                "#B370CF",
+                "#E95E4F",
+                "#36CAAB",
+                "#49A9EA"
+              ]
+            }]
+          },
+          options: options
+        });
+      });
+    </script>
+    <!-- /Doughnut Chart -->
+    
+    <!-- bootstrap-daterangepicker -->
+    <script>
+      $(document).ready(function() {
+
+        var cb = function(start, end, label) {
+          console.log(start.toISOString(), end.toISOString(), label);
+          $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        };
+        var optionSet1 = {
+          startDate: moment().subtract(29, 'days'),
+          endDate: moment(),
+          minDate: '01/01/2012',
+          maxDate: '12/31/2015',
+          dateLimit: {
+            days: 60
+          },
+          showDropdowns: true,
+          showWeekNumbers: true,
+          timePicker: false,
+          timePickerIncrement: 1,
+          timePicker12Hour: true,
+          ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+          },
+          opens: 'left',
+          buttonClasses: ['btn btn-default'],
+          applyClass: 'btn-small btn-primary',
+          cancelClass: 'btn-small',
+          format: 'MM/DD/YYYY',
+          separator: ' to ',
+          locale: {
+            applyLabel: 'Submit',
+            cancelLabel: 'Clear',
+            fromLabel: 'From',
+            toLabel: 'To',
+            customRangeLabel: 'Custom',
+            daysOfWeek: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+            monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            firstDay: 1
+          }
+        };
+        $('#reportrange span').html(moment().subtract(29, 'days').format('MMMM D, YYYY') + ' - ' + moment().format('MMMM D, YYYY'));
+        $('#reportrange').daterangepicker(optionSet1, cb);
+        $('#reportrange').on('show.daterangepicker', function() {
+          console.log("show event fired");
+        });
+        $('#reportrange').on('hide.daterangepicker', function() {
+          console.log("hide event fired");
+        });
+        $('#reportrange').on('apply.daterangepicker', function(ev, picker) {
+          console.log("apply event fired, start/end dates are " + picker.startDate.format('MMMM D, YYYY') + " to " + picker.endDate.format('MMMM D, YYYY'));
+        });
+        $('#reportrange').on('cancel.daterangepicker', function(ev, picker) {
+          console.log("cancel event fired");
+        });
+        $('#options1').click(function() {
+          $('#reportrange').data('daterangepicker').setOptions(optionSet1, cb);
+        });
+        $('#options2').click(function() {
+          $('#reportrange').data('daterangepicker').setOptions(optionSet2, cb);
+        });
+        $('#destroy').click(function() {
+          $('#reportrange').data('daterangepicker').remove();
+        });
+      });
+    </script>
+    <!-- /bootstrap-daterangepicker -->
+ 
+    <!-- gauge.js -->
+    <script>
+      var opts = {
+          lines: 12,
+          angle: 0,
+          lineWidth: 0.4,
+          pointer: {
+              length: 0.75,
+              strokeWidth: 0.042,
+              color: '#1D212A'
+          },
+          limitMax: 'false',
+          colorStart: '#1ABC9C',
+          colorStop: '#1ABC9C',
+          strokeColor: '#F0F3F3',
+          generateGradient: true
+      };
+      var target = document.getElementById('foo'),
+          gauge = new Gauge(target).setOptions(opts);
+
+      gauge.maxValue = 6000;
+      gauge.animationSpeed = 32;
+      gauge.set(3200);
+      gauge.setTextField(document.getElementById("gauge-text"));
+    </script>
+    <!-- /gauge.js -->
+
+    <script>
+    $(function(){
+
+          //Start test
+    $('#reportrange2')
+          .datepicker({
+              // format: 'mm/dd/yyyy'
+              // format:'mm/dd/yyyy',
+          });
+          // .on("datePicker.change", function(e) {
+          // alert('hey');
+      });
+
+    //Text Box
+      $('#id_report_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+      </script>
+
+      //graph_bar
+      // graph_bar canvas1
+      <script>
+      $(document).ready(function() {
+        Morris.Bar({
+          element: 'graph_bar',
+          data: [
+            {% for item in data.yield_details %}
+                    {%percent item.number item.passed as percent_data %}
+                    {% if percent_data < 100 %}
+                    { station: '{{ item.station__station }}', yield:  {{ percent_data|floatformat:2 }} },
+                    {% endif %}
+            {% endfor %}
+          ],
+          xkey: 'station',
+          ykeys: ['yield'],
+          labels: ['yield'],
+          barRatio: 0.4,
+          barColors: ['#26B99A', '#34495E', '#ACADAC', '#3498DB'],
+          xLabelAngle: 80,
+          hideHover: 'auto',
+          resize: true
+        });
+        });
+    </script>
+
+      {% endblock java_content %}
