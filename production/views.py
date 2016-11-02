@@ -1461,7 +1461,7 @@ def graph_boxplot_by_date(request,family,station,
             date_x_data.append(mylist)
 
     if date_range=='month':
-        last_month_number=4
+        last_month_number=5
         date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
         (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
         date_from = begin_of_month
