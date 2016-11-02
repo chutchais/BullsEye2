@@ -670,6 +670,8 @@ def spc_main_graph(request):
             default_start = date.today() - datetime.timedelta(days=14)
         elif qmode=='8week':
             default_start = date.today() - datetime.timedelta(days=56)
+        elif qmode=='4month':
+            default_start = date.today() - datetime.timedelta(months=4)
         else:
             default_start = date.today() - datetime.timedelta(days=7)
 
@@ -1087,6 +1089,9 @@ def graph_distribution_by_range(request,family,station,parameter,date_range ='7d
     elif date_range=='14day':
         default_start = date.today()  - datetime.timedelta(days=14)
         group_by='date'
+    elif date_range=='4month':
+        default_start = date.today()  - datetime.timedelta(months=4)
+        group_by='month'
     else: #7days
         default_start = date.today()  - datetime.timedelta(days=7)
         group_by='date'
@@ -1370,6 +1375,9 @@ def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
     elif date_range=='14day':
         default_start = date.today()  - datetime.timedelta(days=14)
         group_by='date'
+    elif date_range=='4month':
+        default_start = date.today()  - datetime.timedelta(days=120)
+        group_by='month'
     else: #7days
         default_start = date.today()  - datetime.timedelta(days=7)
         group_by='date'
@@ -1452,6 +1460,29 @@ def graph_boxplot_by_date(request,family,station,
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
 
+    if date_range=='month':
+        last_month_number=4
+        date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
+        (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
+        date_from = begin_of_month
+        (current_year,current_week,day_of_week)=date_to.isocalendar()
+        
+        delta= last_month_number
+        date_labels = [date_from.strftime('%Y-%m')]
+        from dateutil.relativedelta import relativedelta
+        for i in range(1,delta):
+            date_labels.append((date_from + relativedelta(months=i)).strftime('%Y-%m'))
+        
+        date_x_data=[]
+        
+        for d in date_labels:
+            date_obj_start = datetime.datetime.strptime(d +'-01' , "%Y-%m-%d")
+            date_obj_end =  date_obj_start + relativedelta(months=1)
+            mylist = list(pt.filter(
+                performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+                ).values_list('value',flat=True))
+            date_x_data.append(mylist)
+
 
     adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
 
@@ -1462,7 +1493,7 @@ def graph_boxplot_by_date(request,family,station,
     ax.boxplot(date_x_data,labels=date_labels)#rs
 
     ax.set_xticklabels( date_labels, rotation=60,ha='right')
-    ax.set_title('By Date')
+    ax.set_title('By %s' % date_range)
     ax.axhline(y=means,color='g' ,ls='dashed')
     ax.set_title('%s  (%s : %s)' % (parameter,family,station_name))
     #myFmt = mdates.DateFormatter('%d')
@@ -1518,3 +1549,17 @@ def week_magic(day):
     end_of_week = day + to_end_of_week
 
     return (beginning_of_week, end_of_week)
+
+
+def month_magic(dt, d_years=0, d_months=0):
+    # d_years, d_months are "deltas" to apply to dt
+    from datetime import date, timedelta
+    y, m = dt.year + d_years, dt.month + d_months
+    a, m = divmod(m-1, 12)
+    first_day= date(y+a, m+1, 1)
+    
+    m=0
+    y, m = dt.year + d_years, dt.month + m
+    a, m = divmod(m-1, 12)
+    last_day= date(y+a, m+1, 1) + timedelta(-1)
+    return (first_day,last_day)
