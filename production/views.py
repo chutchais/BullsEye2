@@ -57,6 +57,7 @@ def get_parameter(request, station):
     parameter_dict = {}
     for parameter in parameters:
         parameter_dict[parameter.name] = parameter.name
+    print (parameter_dict)
     return HttpResponse(json.dumps(parameter_dict))
 
 # Dashboard .
@@ -651,7 +652,7 @@ def spc_main(request):
     }
     return render(request, 'production/spc_main_graph.html',context)
 
-def spc_main_graph(request):
+def spc_main_graph(request,family=''):
     form = ReportFiltersForm(request.POST or None)
     import datetime
     qmode ='7day'
@@ -680,7 +681,16 @@ def spc_main_graph(request):
 
     # print (start_date)
     # print (stop_date)
+    date_from = datetime.datetime.strptime(start_date,'%Y-%m-%d')
+    date_to = datetime.datetime.strptime(stop_date,'%Y-%m-%d')
 
+    objfamily = Family.objects.filter(critical=True).order_by('ordering')
+
+    if family=='':
+        family = objfamily[0].name
+
+    st=Station.objects.filter(critical=True,family__name=family).order_by('ordering')
+    params = Parameter.objects.filter(critical=True).order_by('ordering')
 
     data={
         "title":"Production Distribution Data",
@@ -688,23 +698,19 @@ def spc_main_graph(request):
         "date_to_str":stop_date,
         "date_from":start_date,
         "date_to":stop_date,
-        "family" : 'Acacia',
+        "family" : family,
         "mode" : '7day'
     }
 
     
-    date_from = datetime.datetime.strptime(start_date,'%Y-%m-%d')
-    date_to = datetime.datetime.strptime(stop_date,'%Y-%m-%d')
-    st=Station.objects.filter(critical=True,family__name='Acadia').order_by('ordering')
-    params = Parameter.objects.filter(critical=True).order_by('ordering')
-    family = Family.objects.filter(critical=True).order_by('ordering')
+
 
 
     context ={
         "data": data,
         "station" : st,
         "parameter" :params,
-        "family" : family,
+        "family" : objfamily,
         "form" : form
     }
     return render(request, 'production/spc_main_graph.html',context)
@@ -762,6 +768,7 @@ def spc_station(request,family,station,date_from,date_to):
     import datetime
     from django.db.models import F
     from django.db.models import Count,Max,Min,Avg,StdDev
+
     date_from = datetime.datetime.strptime(date_from,'%Y-%m-%d')
     date_to = datetime.datetime.strptime(date_to,'%Y-%m-%d')
 
@@ -1136,8 +1143,8 @@ def graph_distribution(request,family,station,
 
 
     if pt.count()==0:
-        print ('No data')
-        return HttpResponse("No Found Data")
+        print ('No data %s' % parameter)
+        return HttpResponse("Not Found Data")
 
 
     #get Aggregate data
@@ -1236,7 +1243,7 @@ def graph_distribution(request,family,station,
     #Box Plot by Tester
     tester_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
     user_labels = pt.distinct('performing__user').values_list('performing__user',flat=True)
-    product_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product',flat=True)
+    product_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
 
     tester_x_data=[]
     for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
@@ -1369,6 +1376,9 @@ def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
     import datetime
     from datetime import date
 
+
+
+
     if date_range=='6week':
         default_start = date.today()  - datetime.timedelta(days=42)
         group_by='week'
@@ -1424,6 +1434,7 @@ def graph_boxplot_by_date(request,family,station,
         station_name=station
 
     means = pt.aggregate(mean=Avg('value')).get('mean')
+    print ('Total = %s , means = %s' %(pt.count(),means))
 
     if date_range=='date':
         delta = date_to - date_from
@@ -1494,7 +1505,11 @@ def graph_boxplot_by_date(request,family,station,
 
     ax.set_xticklabels( date_labels, rotation=60,ha='right')
     ax.set_title('By %s' % date_range)
-    ax.axhline(y=means,color='g' ,ls='dashed')
+
+    if not means == None :
+        ax.axhline(y=means,color='g' ,ls='dashed')
+    
+
     ax.set_title('%s  (%s : %s)' % (parameter,family,station_name))
     #myFmt = mdates.DateFormatter('%d')
     #ax.xaxis.set_major_formatter(myFmt)

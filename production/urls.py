@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^spc/filter/get_product/(?P<family>[-\w|\W\ ]+)/', views.get_product, name='get_product'),
     url(r'^spc/filter/get_parameter/(?P<station>[-\w|\W\ ]+)/', views.get_parameter, name='get_parameter'),
     url(r'^spc/filter/', views.spc_filter, name='spc_filter'),
+    url(r'^spc/(?P<family>[-\w|\W\ ]+)/', views.spc_main_graph, name='spc_main_family'),
     url(r'^spc/', views.spc_main_graph, name='spc_main_graph'),
     url(r'^graph/distribution/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.graph_distribution_by_range, name='graph_distribution_by_range'),

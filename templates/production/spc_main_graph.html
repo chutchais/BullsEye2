@@ -22,7 +22,7 @@
               
               <div class="col-md-12 col-sm-12 col-xs-12">
                 <div id="head-title" class="col-md-6" class="pull-left">
-                  <h3>Product family : {{data.family}}  <small>on {{data.date_from}} to {{data.date_to}}</small></h3>
+                  <h3>Model : {{data.family}}  <small>on {{data.date_from}} to {{data.date_to}}</small></h3>
                 </div>
                 
                 <div class="col-md-6" class="pull-left">
@@ -38,9 +38,10 @@
                     <div class="row">
                       <!-- <label >Select Family</label> -->
                       <div class="col-md-3 col-sm-3 col-xs-12">
-                          <select class="select2_single form-control" tabindex="-1">
+                          <select class="select2_single form-control" tabindex="-1" name="opt_family">
                             {% for item in family %}
-                            <option value="{{item.name}}">{{item.name}}</option>
+                            <option value="{{item.name}}" {% if item.name == data.family %}selected="selected"{% endif %}>
+                            {{item.name}}</option>
                             {% endfor %}
                           </select>
                         </div>
@@ -99,7 +100,7 @@
                         <ul class="dropdown-menu" role="menu">
                           <li><a id="changeurl" station={{item.station}} parameter={{param.name}} 
                           datefrom={{data.date_from}} dateto={{data.date_to}}
-                          href="../graph/distribution/Acadia/{{item.station}}/{{param.name}}/7day/">Show Distribution</a>
+                          href= "{% url 'graph_distribution_by_range' data.family item.station param.name '7day'  %}" >Show Distribution</a>
                           </li>
                         </ul>
                       </li>
@@ -110,7 +111,7 @@
                   </div>
                   <div id="graph-body" class="x_content">
                   <!--   Start Content -->
-                  <img class="img-responsive" src="../graph/boxplot/Acadia/{{item.station}}/{{param.name}}/7day/">
+                  <img class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{item.station}}/{{param.name|to_slash}}/7day/">
 
                   <!-- SPC details -->
                   <!-- <div>
@@ -186,11 +187,17 @@
       });
        });
 
-      if ($('input[name=opt_date_range]:checked').length > 0) {
-          // do something here
-        //alert ('Test Radio')
-      }
 
+      $('select[name=opt_family]').on('change', function() {
+              //alert( this.value ); 
+              // $('#yourdropdownid option:selected').text();
+              var selected_family=$(this).find(":selected").val()
+              var url ="{% url 'spc_main_family' '0'   %}".replace('0',selected_family)
+              window.location.href = url ;
+              
+              
+              
+      });
 
       $('#DateRangeSelect input[type=radio]').change(function() {       
             // $('body').css('cursor', 'wait');
@@ -219,7 +226,7 @@
             // $("div").css('cursor','auto');
             
 
-            $('#head-title h3').text( "Production data : Last " + range );
+            $('#head-title h3 small').text( "On last " + range );
         });
 
 
