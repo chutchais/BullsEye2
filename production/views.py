@@ -1120,7 +1120,7 @@ def graph_distribution(request,family,station,
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     from matplotlib.figure import Figure
     from matplotlib import pyplot as plt
-
+    print ('Input data : %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
 
     #Query data
     import datetime
@@ -1143,7 +1143,7 @@ def graph_distribution(request,family,station,
 
 
     if pt.count()==0:
-        print ('No data %s' % parameter)
+        print ('No data %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
         return HttpResponse("Not Found Data")
 
 

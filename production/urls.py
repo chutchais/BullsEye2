@@ -5,9 +5,9 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^1/', views.index, name='dashboard1'),
-    url(r'^2/', views.dashboard2, name='dashboard2'),
-    url(r'^3/', views.dashboard3, name='dashboard3'),
+    # url(r'^1/', views.index, name='dashboard1'),
+    # url(r'^2/', views.dashboard2, name='dashboard2'),
+    # url(r'^3/', views.dashboard3, name='dashboard3'),
     url(r'^spc/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/', 
         views.spc_station, name='spc_station'),
     url(r'^spc/filter/get_station/(?P<family>[-\w|\W\ ]+)/', views.get_station, name='get_station'),
@@ -16,10 +16,10 @@ urlpatterns = [
     url(r'^spc/filter/', views.spc_filter, name='spc_filter'),
     url(r'^spc/(?P<family>[-\w|\W\ ]+)/', views.spc_main_graph, name='spc_main_family'),
     url(r'^spc/', views.spc_main_graph, name='spc_main_graph'),
-    url(r'^graph/distribution/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
-        views.graph_distribution_by_range, name='graph_distribution_by_range'),
     url(r'^graph/distribution/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/', 
         views.graph_distribution, name='graph_distribution'),
+    url(r'^graph/distribution/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
+        views.graph_distribution_by_range, name='graph_distribution_by_range'),
 
     url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.graph_boxplot_by_date, name='graph_boxplot_by_date'),

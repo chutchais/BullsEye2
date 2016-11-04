@@ -170,25 +170,11 @@
 
 
         {% block java_content %}
-        <script>
-    $(function(){
-
-
-    //Text Box
-      $('#id_start_date').datepicker({
-                format: 'yyyy-mm-dd',
-                todayBtn: 'linked'
-      });
-       $('#id_end_date').datepicker({
-                format: 'yyyy-mm-dd',
-                todayBtn: 'linked'
-      });
-       });
-      </script>
+       
 
       <script>
       $(document).ready(function() {
-         // $( "#id_start_date" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+         
         $('#id_start_date').daterangepicker({
           dateFormat: 'YYYY-MM-DD',
           singleDatePicker: true,
@@ -197,7 +183,7 @@
           console.log(start.toISOString(), end.toISOString(), label);
         });
 
-        $( "#id_end_date" ).daterangepicker( "option", "dateFormat", "yy-mm-dd" );
+        
         $('#id_end_date').daterangepicker({
           locale: {
               format: 'YYYY-MM-DD'
@@ -208,18 +194,18 @@
         }, function(start, end, label) {
           console.log(start.toISOString(), end.toISOString(), label);
         });
-        $('#single_cal3').daterangepicker({
-          singleDatePicker: true,
-          calender_style: "picker_3"
-        }, function(start, end, label) {
-          console.log(start.toISOString(), end.toISOString(), label);
-        });
-        $('#single_cal4').daterangepicker({
-          singleDatePicker: true,
-          calender_style: "picker_4"
-        }, function(start, end, label) {
-          console.log(start.toISOString(), end.toISOString(), label);
-        });
+        // $('#single_cal3').daterangepicker({
+        //   singleDatePicker: true,
+        //   calender_style: "picker_3"
+        // }, function(start, end, label) {
+        //   console.log(start.toISOString(), end.toISOString(), label);
+        // });
+        // $('#single_cal4').daterangepicker({
+        //   singleDatePicker: true,
+        //   calender_style: "picker_4"
+        // }, function(start, end, label) {
+        //   console.log(start.toISOString(), end.toISOString(), label);
+        // });
       });
     </script>
 
@@ -244,10 +230,13 @@
               var parameter = $( "#parameter option:selected" ).val();
 
 
+              var url ="{% url 'graph_distribution' 'FAMILY' 'STATION' 'DATE_START' 'DATE_STOP' 'PARAM'  %}".replace('FAMILY',family)
+              var url = url.replace('STATION',station)
+              var url = url.replace('PARAM',parameter)
+              var url = url.replace('DATE_START',new_date_start)
+              var url = url.replace('DATE_STOP',new_date_stop)
               
 
-              var url = '/dashboard/graph/distribution/'+ family +'/' + station + '/'+ new_date_start 
-                        + '/'+ new_date_stop + '/'+ parameter + '/';
               //alert (url)
               $("*").css("cursor", "progress");
               $.ajax({ 
@@ -265,6 +254,7 @@
               //alert( this.value ); // or $(this).val()
               family_id = this.value;
               request_url = 'get_station/' + family_id + '/';
+              var request_url ="{% url 'get_station' '0'   %}".replace('0',family_id)
 
               //clear parameter
               $('#parameter')
@@ -288,6 +278,8 @@
               });
               //Get Product
               request_url = 'get_product/' + family_id + '/';
+              var request_url ="{% url 'get_product' '0'   %}".replace('0',family_id)
+
               $.get(request_url, function(data, status){
                   var parsed = $.parseJSON(data);
                   //alert("Data: " + data + "\nStatus: " + status);
@@ -301,12 +293,18 @@
                   });
               });
               //End get Product
+
+              //Triger Station Change
+              $( "#station" ).change();
+
+
             });
             //End Family change
 
             $('#station').on('change', function() {
               //Start get Parameter
               request_url = 'get_parameter/' + this.value + '/';
+              var request_url ="{% url 'get_parameter' '0'   %}".replace('0',this.value)
               $.get(request_url, function(data, status){
                   var parsed = $.parseJSON(data);
                   //alert("Data: " + data + "\nStatus: " + status);

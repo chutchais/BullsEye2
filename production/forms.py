@@ -46,7 +46,7 @@ class ReportFiltersForm(forms.Form):
 class SpcFilterForm(forms.Form):
     start_date = forms.DateField(label='Start Date',input_formats=['%Y-%m-%d'])
     end_date = forms.DateField(label='End Date',input_formats=['%Y-%m-%d'])
-    family = forms.ModelChoiceField(queryset=Family.objects.all(), empty_label="(ALL)")#forms.CharField(label='Product Family')
+    family = forms.ModelChoiceField(queryset=Family.objects.filter(critical=True).order_by('ordering'))#forms.CharField(label='Product Family')
     # station = forms.ModelChoiceField(queryset=Station.objects.all(),
     # to_field_name="name", empty_label="(ALL)")#forms.CharField(label='Station')
     station = forms.ModelChoiceField(queryset=Station.objects.none())
