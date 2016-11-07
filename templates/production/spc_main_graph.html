@@ -90,17 +90,17 @@
              {% for param in parameter|critical_station:item.station %}
               <div class="col-md-4 col-sm-6 col-xs-12">
                 <div class="x_panel">
-                  <div class="x_title">
+                  <div class="x_title" id="each_param">
                     <h2>{{param.name}}<small></small></h2>
                     <ul class="nav navbar-right panel_toolbox">
                       <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                       </li>
                       <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
-                        <ul class="dropdown-menu" role="menu">
+                        <ul class="dropdown-menu" role="menu" id="oneAnswer">
                           <li><a id="changeurl" station={{item.station}} parameter={{param.name}} 
                           datefrom={{data.date_from}} dateto={{data.date_to}}
-                          href= "{% url 'graph_distribution_by_range' data.family item.station param.name '7day'  %}" >Show Distribution</a>
+                          href= "{% url 'graph_distribution_by_range' data.family item.station param.name data.mode %}" >Show Distribution</a>
                           </li>
                         </ul>
                       </li>
@@ -224,6 +224,19 @@
             });
             // $('body').css('cursor','auto');
             // $("div").css('cursor','auto');
+            $('#oneAnswer li a').each(function (i) {
+
+                  // var index = $(this).index();
+                  // var text = $(this).text();
+                  var href_old = $(this).attr('href');
+                var href_old = href_old.replace("7day/", "");
+                var href_old = href_old.replace("14day/", "");
+                var href_old = href_old.replace("6week/", "");
+                var href_old = href_old.replace("4month/", "");
+                var href_new =href_old +  range + '/'
+                $(this).attr('href',href_new);
+                  // alert($(this).attr('href'));
+              });
             
 
             $('#head-title h3 small').text( "On last " + range );

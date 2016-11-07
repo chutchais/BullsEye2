@@ -33,6 +33,7 @@ from django.db import models
 
 import json
 from django.http import HttpResponse
+from dateutil.relativedelta import relativedelta
 
 def get_station(request, family):
     #campus = models.Campus.objects.get(pk=campus_id)
@@ -699,12 +700,8 @@ def spc_main_graph(request,family=''):
         "date_from":start_date,
         "date_to":stop_date,
         "family" : family,
-        "mode" : '7day'
+        "mode" : qmode
     }
-
-    
-
-
 
     context ={
         "data": data,
@@ -1092,19 +1089,23 @@ def graph_distribution_by_range(request,family,station,parameter,date_range ='7d
 
     if date_range=='6week':
         default_start = date.today()  - datetime.timedelta(days=42)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
         group_by='week'
     elif date_range=='14day':
         default_start = date.today()  - datetime.timedelta(days=14)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
         group_by='date'
     elif date_range=='4month':
-        default_start = date.today()  - datetime.timedelta(months=4)
+        default_start = date.today()  - relativedelta(months=4)
+        date_to = datetime.datetime.strftime(date.today()+ relativedelta(months=1),"%Y-%m-%d")
         group_by='month'
     else: #7days
         default_start = date.today()  - datetime.timedelta(days=7)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
         group_by='date'
 
     date_from= datetime.datetime.strftime(default_start,"%Y-%m-%d")
-    date_to = datetime.datetime.strftime(date.today(),"%Y-%m-%d")
+    
 
     print ('from %s to %s' % (date_from,date_to))
 
@@ -1290,13 +1291,40 @@ def graph_distribution(request,family,station,
 
 
 
+    from matplotlib.dates import DateFormatter
+    import matplotlib.dates as dates
+    plt.gcf().autofmt_xdate()
 
+    ab = plt.gca()
     ab = fig.add_subplot(326)
-    a = np.linspace(1, x.count(), x.count(), endpoint=False)
+    #a = np.linspace(1, x.count(), x.count(), endpoint=False)
+    a= pt.values_list('performing__started_date',flat=True)
     ab.scatter(a, x)
     ab.set_ylim([limit_min,limit_max])
+    ab.set_xlim([date_from,date_to])
+    # ab.set_xtick( range(2004,2017,3),[str(i) for i in range(2004,2017,3)])
+    #ab.set_xticklabels( a,rotation=40,ha='right')
+
+    
+    xab = ab.get_xaxis()
+
+    if (date_to-date_from).days >60:
+        xab.set_major_locator(dates.MonthLocator())
+        xab.set_major_formatter(dates.DateFormatter('%b'))
+        xab.set_minor_locator(dates.DayLocator(bymonthday=range(1,32)))
+    else:
+        xab.set_major_locator(dates.DayLocator())
+        xab.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
+        xab.set_minor_locator(dates.HourLocator(byhour=range(0,24,3)))
+        # xab.set_minor_formatter(dates.DateFormatter('%H'))
+    
+
+    xab.set_tick_params(which='major', pad=15,direction=40)
+    # ab.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
+
     ab.axhline(y=means,color='g' ,ls='dashed')
     ab.set_title('Scatter Diagram')
+    plt.setp( xab.get_majorticklabels(), rotation=40, horizontalalignment='right' )
 
 
 
