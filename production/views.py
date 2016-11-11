@@ -1552,12 +1552,19 @@ def graph_boxplot_by_date(request,family,station,
     parameter=parameter.replace('-slash-','/')
 
     from django.db.models import F
+    # pt = PerformingDetails.objects.filter(
+    #     performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #     performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #     parameter__name=parameter,
+    #     performing__sn_wo__workorder__product__family__name=family,
+    #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+    #Some parameter don't has Min or Max limit
     pt = PerformingDetails.objects.filter(
         performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
         performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
         parameter__name=parameter,
         performing__sn_wo__workorder__product__family__name=family,
-        performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+        performing__station__station=station)
 
     if pt.count()>0:
         station_name=pt[0].performing.station.name
@@ -1693,8 +1700,10 @@ def graph_boxplot_by_date(request,family,station,
     # plt.tick_params(axis='both', which='minor', labelsize=18)
 
     ax = fig.add_subplot(111) #211 ,111
-    # ax.set_axis_bgcolor('red')
-    bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)#rs
+   
+    bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True,sym='')#remove filer (outlier)
+    #date_x_data=reject_outliers(date_x_data)
+    # bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)
     #,fontsize=18
     ax.set_xticklabels( date_labels, rotation=0,ha='center')
     ax.set_title('By %s' % date_range)
@@ -1738,7 +1747,17 @@ def graph_boxplot_by_date(request,family,station,
     response=django.http.HttpResponse(content_type='image/png')
     canvas.print_png(response)
     return response
-    
+
+# def reject_outliers2(data, m=2):
+#     import numpy as np
+#     return data[abs(data - np.mean(data)) < m * np.std(data)] 
+
+# def reject_outliers(data, m = 2.):
+#     import numpy as np
+#     d = np.abs(data - np.median(data))
+#     mdev = np.median(d)
+#     s = d/mdev if mdev else 0.
+#     return data[s<m]
 
 def box_plot(ax,data,means,title=''):
     #import numpy as np
@@ -1755,6 +1774,7 @@ def box_plot(ax,data,means,title=''):
 
 
 def reject_outliers(data):
+    import numpy as np
     m = 2
     u = np.mean(data)
     s = np.std(data)
