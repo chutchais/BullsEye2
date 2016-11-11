@@ -210,7 +210,7 @@ class PerformingDetails(models.Model):
         (S, 'String'),
         (N, 'Number'),
     )
-	performing = models.ForeignKey('Performing' ,related_name='performingdetail_list',db_index=True)
+	performing = models.ForeignKey('Performing' ,related_name='performingdetail_list')
 	parameter = models.ForeignKey('Parameter' ,related_name='performing_used',db_index=True)
 	value = models.FloatField(null=True, blank=True)
 	value_str = models.CharField(max_length=50,null=True, blank=True)

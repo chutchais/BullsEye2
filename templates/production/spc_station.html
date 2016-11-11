@@ -82,7 +82,7 @@
                       <thead>
                         <tr>
                           <!-- <th>#</th> -->
-                          <th>Parameter</th>
+                          <th>Date</th>
                           <th>Sample(n)</th>
                           <th>Min</th>
                           <th>Max</th>
@@ -110,9 +110,7 @@
                         <tr>
                          
                           <td>
-                          <a href="{% url 'graph_histogram' data.family data.station data.date_from data.date_to item.parameter__name|to_slash %}">
-                            {{item.parameter__name}}
-                          </a>
+
                           </td>
                           <td>{{item.total}}</td>
                           <td>{{item.min|floatformat:3}}</td>

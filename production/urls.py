@@ -5,11 +5,8 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    # url(r'^1/', views.index, name='dashboard1'),
-    # url(r'^2/', views.dashboard2, name='dashboard2'),
-    # url(r'^3/', views.dashboard3, name='dashboard3'),
-    url(r'^spc/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/', 
-        views.spc_station, name='spc_station'),
+    url(r'^spc/cpk/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
+        views.spc_cpk_station, name='spc_cpk_station'),
     url(r'^spc/filter/get_station/(?P<family>[-\w|\W\ ]+)/', views.get_station, name='get_station'),
     url(r'^spc/filter/get_product/(?P<family>[-\w|\W\ ]+)/', views.get_product, name='get_product'),
     url(r'^spc/filter/get_parameter/(?P<station>[-\w|\W\ ]+)/', views.get_parameter, name='get_parameter'),

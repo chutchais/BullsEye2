@@ -84,8 +84,18 @@ def index(request):
     # d2=datetime.strftime(stop_date,"%Y-%m-%d %I:%M:%S")
     d1=datetime.strftime(start_date,"%Y-%m-%d")
     d2=datetime.strftime(stop_date,"%Y-%m-%d")
-    print (d1)
-    print (d2)
+
+    from django.utils import timezone
+    current_tz = timezone.get_current_timezone()
+
+
+    d1 =current_tz.localize(start_date )
+    d2 =current_tz.localize (stop_date )
+
+
+    print ('Index page : %s' % d1)
+    print ('Index page : %s' % d2)
+
     total_input=get_total_input(d1,d2)
     total_output=get_total_output(d1,d2)
     total_shipped=get_total_shipped(d1,d2)
@@ -637,12 +647,20 @@ def spc_main(request):
         "date_to":stop_date,
     }
 
+    from django.utils import timezone
+    current_tz = timezone.get_current_timezone()
     
     date_from = datetime.datetime.strptime(start_date,'%Y-%m-%d')
     date_to = datetime.datetime.strptime(stop_date,'%Y-%m-%d')
+
+    date_from=current_tz.localize(date_from )
+    date_to =current_tz.localize (date_to )
+
     st=Station.objects.filter(critical=True)
-    p = Performing.objects.filter(finished_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
-        finished_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    # p = Performing.objects.filter(finished_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #     finished_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #     station__critical=True)
+    p = Performing.objects.filter(finished_date__range=[date_from,date_to],
         station__critical=True)
 
     context ={
@@ -748,6 +766,72 @@ def spc_filter(request):
     }
     return render(request, 'production/spc_selection.html',context)
 
+
+@api_view(['GET', 'POST'])
+def spc_cpk_station(request,family,station,parameter,date_range):
+    
+
+    import datetime
+    from django.db.models import F
+    from django.db.models import Count,Max,Min,Avg,StdDev
+
+    from datetime import date
+    qmode=date_range
+    if qmode=='7day':
+        default_start = date.today() - datetime.timedelta(days=7)
+    elif qmode=='14day':
+        default_start = date.today() - datetime.timedelta(days=14)
+    elif qmode=='8week':
+        default_start = date.today() - datetime.timedelta(days=56)
+    elif qmode=='4month':
+        default_start = date.today() - datetime.timedelta(months=4)
+    else:
+        default_start = date.today() - datetime.timedelta(days=7)
+
+    start_date= datetime.datetime.strftime(default_start,"%Y-%m-%d")
+    stop_date = datetime.datetime.strftime(date.today(),"%Y-%m-%d")
+
+    # print (start_date)
+    # print (stop_date)
+    date_from = datetime.datetime.strptime(start_date,'%Y-%m-%d')
+    date_to = datetime.datetime.strptime(stop_date,'%Y-%m-%d')
+
+    data={
+        "title":"Production Data",
+        "family": family,
+        "station" : station,
+        "date_from_str":date_from,
+        "date_to_str":date_to,
+        "date_from":date_from,
+        "date_to":date_to,
+    }
+
+    # date_from = datetime.datetime.strptime(date_from,'%Y-%m-%d')
+    # date_to = datetime.datetime.strptime(date_to,'%Y-%m-%d')
+
+    pd2 = PerformingDetails.objects.filter(
+    performing__started_date__range=[date_from,date_to],
+    parameter__name =parameter,
+    performing__sn_wo__workorder__product__family__name=family,
+    performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min')).values('parameter__name').annotate(total=Count('value'),min=Min('value'),
+        max=Max('value'),avg=Avg('value'),std=StdDev('value'),
+        limit_min=Max('limit_min'),limit_max=Max('limit_max'))
+    # pd2 = PerformingDetails.objects.filter(
+    # performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    # performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    # parameter__critical=True,
+    # performing__sn_wo__workorder__product__family__name=family,
+    # performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min')).values('parameter__name').annotate(total=Count('value'),min=Min('value'),
+    #     max=Max('value'),avg=Avg('value'),std=StdDev('value'),
+    #     limit_min=Max('limit_min'),limit_max=Max('limit_max'))
+
+    record_count = pd2.count()
+
+    context ={
+        "data": data,
+        "performing" :pd2,
+    }
+    return render(request, 'production/spc_station.html',context)
 
 
 @api_view(['GET', 'POST'])
@@ -1026,10 +1110,9 @@ def execute_transaction(xml):
 
             each_result = True if param_result=='Passed' else False
             #9.1)Parameter
-            #print (code)
-            objParam,created = Parameter.objects.get_or_create(name=code)
+            #Edit by Chutchai S on Nov 10,2016 -- To fix same parameter for many operation
+            objParam,created = Parameter.objects.get_or_create(name=code,group=operation)
             if created:
-                objParam.group = operation
                 objParam.description=description
                 objParam.save()
 
@@ -1107,7 +1190,7 @@ def graph_distribution_by_range(request,family,station,parameter,date_range ='7d
     date_from= datetime.datetime.strftime(default_start,"%Y-%m-%d")
     
 
-    print ('from %s to %s' % (date_from,date_to))
+    print ('Distribution by Range from %s to %s' % (date_from,date_to))
 
     return graph_distribution(request,family,station,date_from,date_to,parameter)
 
@@ -1121,7 +1204,7 @@ def graph_distribution(request,family,station,
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     from matplotlib.figure import Figure
     from matplotlib import pyplot as plt
-    print ('Input data : %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
+    
 
     #Query data
     import datetime
@@ -1129,15 +1212,23 @@ def graph_distribution(request,family,station,
     date_from = datetime.datetime.strptime(date_from,'%Y-%m-%d')
     date_to = datetime.datetime.strptime(date_to,'%Y-%m-%d')
 
-
-
+    from django.utils import timezone
+    # current_tz = timezone.get_current_timezone()
+    # date_from=current_tz.localize(date_from )
+    # date_to =current_tz.localize (date_to )
+    print ('Graph distribution input data : %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
     #replace  -slash- with /
     parameter=parameter.replace('-slash-','/')
 
     from django.db.models import F
+    # pt = PerformingDetails.objects.filter(
+    #     performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #     performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #     parameter__name=parameter,
+    #     performing__sn_wo__workorder__product__family__name=family,
+    #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
     pt = PerformingDetails.objects.filter(
-        performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
-        performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+        performing__started_date__range=[date_from,date_to],
         parameter__name=parameter,
         performing__sn_wo__workorder__product__family__name=family,
         performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
@@ -1162,9 +1253,10 @@ def graph_distribution(request,family,station,
 
     # F = gcf()
     # Size = F.get_size_inches()
-    fig = plt.Figure(figsize=(20,10))
-    fig.suptitle('Graph for %s (%s - %s)' % (parameter,family,station),fontsize=14, fontweight='bold')
-    fig.subplots_adjust(top=2)
+    fig = plt.Figure(figsize=(15,8))
+    fig.patch.set_facecolor('white')
+    # fig.suptitle('Distribution data for %s (%s - %s)' % (parameter,family,station),fontsize=18)
+    #fig.subplots_adjust(top=2)
     #fig.suptitle('bold figure suptitle', fontsize=14, fontweight='bold')
 
 
@@ -1208,7 +1300,7 @@ def graph_distribution(request,family,station,
     Cpk = Cpl if Cpl < Cpu else Cpl
     ax.set_ylabel('Probability')
     ax.set_title(r'Histogram of %s : $\mu = %0.2f $, $\sigma=%0.2f$' % (parameter,means,stddev))
-    ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
+    #ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
 
     #Line for 
     # l = ax.axvline(x=means+(3*sigma))
@@ -1234,7 +1326,7 @@ def graph_distribution(request,family,station,
     ax.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
 
     #Overall Box Plot
-    box_plot(ay,x,means,'Overall')
+    #box_plot(ay,x,means,'Overall')
 
 
 
@@ -1264,27 +1356,38 @@ def graph_distribution(request,family,station,
         mylist.remove(max(mylist))
         product_x_data.append(mylist)
 
+    import numpy as np
     az = fig.add_subplot(323) #211 ,111
-    az.boxplot(tester_x_data,labels=tester_labels)#rs
-    az.set_xticklabels( tester_labels, rotation=40,ha='right')
+    az_dict=az.boxplot(tester_x_data,labels=tester_labels,showmeans=True)#rs
+    az.set_xticklabels( tester_labels, rotation=0,ha='center')
     az.axhline(y=means,color='g' ,ls='dashed')
     az.set_title('By Tester')
+
+        #Put Text on Graph
+
+    # for line in az_dict['medians']:
+    #     # get position data for median line
+    #     x, y = line.get_xydata()[1] # top of median line
+    #     # overlay median value
+    #     if not np.isnan(y):
+    #         az.text(x, y, '%.2f' % y,
+    #         verticalalignment='bottom',ha='right',fontsize=14) # draw above, centered
 
     #ax.set_title(r'Parameter : %s' % (parameter))
     #az.set_xlabel('by Tester')
 
 
-    ak = fig.add_subplot(324) #211 ,111
-    ak.boxplot(user_x_data,labels=user_labels)#rs
-    ak.set_xticklabels( user_labels, rotation=40,ha='right')
+    ak = fig.add_subplot(325) #211 ,111
+    ak.boxplot(user_x_data,labels=user_labels,showmeans=True)#rs
+    ak.set_xticklabels( user_labels, rotation=0,ha='center')
     #ax.set_title(r'Parameter : %s' % (parameter))
     ak.axhline(y=means,color='g' ,ls='dashed')
     ak.set_title('by Operator')
 
 
-    al = fig.add_subplot(325) #211 ,111
-    al.boxplot(product_x_data,labels=product_labels)#rs
-    al.set_xticklabels( product_labels, rotation=40,ha='right')
+    al = fig.add_subplot(324) #211 ,111
+    al.boxplot(product_x_data,labels=product_labels,showmeans=True)#rs
+    al.set_xticklabels( product_labels, rotation=0,ha='center')
     #ax.set_title(r'Parameter : %s' % (parameter))
     al.axhline(y=means,color='g' ,ls='dashed')
     al.set_title('by Product')
@@ -1296,7 +1399,7 @@ def graph_distribution(request,family,station,
     plt.gcf().autofmt_xdate()
 
     ab = plt.gca()
-    ab = fig.add_subplot(326)
+    ab = fig.add_subplot(322)
     #a = np.linspace(1, x.count(), x.count(), endpoint=False)
     a= pt.values_list('performing__started_date',flat=True)
     ab.scatter(a, x)
@@ -1314,17 +1417,17 @@ def graph_distribution(request,family,station,
         xab.set_minor_locator(dates.DayLocator(bymonthday=range(1,32)))
     else:
         xab.set_major_locator(dates.DayLocator())
-        xab.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
+        xab.set_major_formatter(dates.DateFormatter('%d'))
         xab.set_minor_locator(dates.HourLocator(byhour=range(0,24,3)))
         # xab.set_minor_formatter(dates.DateFormatter('%H'))
-    
+        #%Y-%m-%d
 
-    xab.set_tick_params(which='major', pad=15,direction=40)
+    xab.set_tick_params(which='major', pad=15,direction=0)
     # ab.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
 
     ab.axhline(y=means,color='g' ,ls='dashed')
     ab.set_title('Scatter Diagram')
-    plt.setp( xab.get_majorticklabels(), rotation=40, horizontalalignment='right' )
+    plt.setp( xab.get_majorticklabels(), rotation=0, horizontalalignment='center' )
 
 
 
@@ -1466,11 +1569,14 @@ def graph_boxplot_by_date(request,family,station,
 
     if date_range=='date':
         delta = date_to - date_from
-        date_labels = [date_from.strftime('%Y-%m-%d')]
+        date_labels = [date_from.strftime('%d')]
+        date_serise = [date_from.strftime('%Y-%m-%d')]
         for i in range(1,delta.days):
-            date_labels.append((date_from + datetime.timedelta(days=i)).strftime('%Y-%m-%d'))
+            date_labels.append((date_from + datetime.timedelta(days=i)).strftime('%d'))
+            date_serise.append((date_from + datetime.timedelta(days=i)).strftime('%Y-%m-%d'))
         date_x_data=[]
-        for d in date_labels:
+
+        for d in date_serise:
             date_obj_start=datetime.datetime.strptime(d,'%Y-%m-%d')
             date_obj_end =  date_obj_start + datetime.timedelta(days=1)
             mylist = list(pt.filter(
@@ -1486,12 +1592,14 @@ def graph_boxplot_by_date(request,family,station,
         (current_year,current_week,day_of_week)=date_to.isocalendar()
         
         delta= last_week_number
-        date_labels = [date_from.strftime('%Y-W%W')]
+        date_labels = [date_from.strftime('W%W')]
+        date_serise = [date_from.strftime('%Y-W%W')]
         for i in range(1,delta):
-            date_labels.append((date_from + datetime.timedelta(days=i*7)).strftime('%Y-W%W'))
+            date_labels.append((date_from + datetime.timedelta(days=i*7)).strftime('W%W'))
+            date_serise.append((date_from + datetime.timedelta(days=i*7)).strftime('%Y-W%W'))
         date_x_data=[]
         
-        for d in date_labels:
+        for d in date_serise:
             date_obj_start = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
             date_obj_end =  date_obj_start + datetime.timedelta(days=7)
             mylist = list(pt.filter(
@@ -1501,26 +1609,78 @@ def graph_boxplot_by_date(request,family,station,
 
     if date_range=='month':
         last_month_number=5
+        last_week_number=20
         date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
-        (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
-        date_from = begin_of_month
-        (current_year,current_week,day_of_week)=date_to.isocalendar()
-        
-        delta= last_month_number
-        date_labels = [date_from.strftime('%Y-%m')]
+        # (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
+        # date_from = begin_of_month
+        # (current_year,current_week,day_of_week)=date_to.isocalendar()
         from dateutil.relativedelta import relativedelta
-        for i in range(1,delta):
-            date_labels.append((date_from + relativedelta(months=i)).strftime('%Y-%m'))
+        (begin_of_to_week,end_of_to_week)=week_magic (date_to) #Get last day of week.
+        (current_year,current_to_week,day_of_to_week)=date_to.isocalendar()
+
+        date_from = end_of_to_week - relativedelta(months=last_month_number)
+        (current_year,current_from_week,day_of_from_week)=date_from.isocalendar()
+        # (current_year,current_week,day_of_week)=date_to.isocalendar()
         
+        # delta= last_month_number
+        # date_labels = [date_from.strftime('%b')]
+        # date_serise = [date_from.strftime('%Y-%m')]
+        delta= current_to_week-current_from_week
+        date_labels = [date_from.strftime('W%W')]
+        date_serise = [date_from.strftime('%Y-W%W')]
+        # from dateutil.relativedelta import relativedelta
+        # for i in range(1,delta):
+        #     date_labels.append((date_from + relativedelta(months=i)).strftime('%b'))
+        #     date_serise.append((date_from + relativedelta(months=i)).strftime('%Y-%m'))
+        
+        # date_x_data=[]
+        for i in range(1,delta):
+            if (i%4)==0:
+                date_labels.append((date_from + datetime.timedelta(days=i*7)).strftime('W%W'))
+            else:
+                date_labels.append('')
+            date_serise.append((date_from + datetime.timedelta(days=i*7)).strftime('%Y-W%W'))
         date_x_data=[]
         
-        for d in date_labels:
-            date_obj_start = datetime.datetime.strptime(d +'-01' , "%Y-%m-%d")
-            date_obj_end =  date_obj_start + relativedelta(months=1)
+        # for d in date_serise:
+        #     date_obj_start = datetime.datetime.strptime(d +'-01' , "%Y-%m-%d")
+        #     date_obj_end =  date_obj_start + relativedelta(months=1)
+        #     mylist = list(pt.filter(
+        #         performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+        #         ).values_list('value',flat=True))
+        #     date_x_data.append(mylist)
+        for d in date_serise:
+            date_obj_start = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
+            date_obj_end =  date_obj_start + datetime.timedelta(days=7)
             mylist = list(pt.filter(
                 performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
+
+    # if date_range=='month':
+    #     last_month_number=5
+    #     date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
+    #     (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
+    #     date_from = begin_of_month
+    #     (current_year,current_week,day_of_week)=date_to.isocalendar()
+        
+    #     delta= last_month_number
+    #     date_labels = [date_from.strftime('%b')]
+    #     date_serise = [date_from.strftime('%Y-%m')]
+    #     from dateutil.relativedelta import relativedelta
+    #     for i in range(1,delta):
+    #         date_labels.append((date_from + relativedelta(months=i)).strftime('%b'))
+    #         date_serise.append((date_from + relativedelta(months=i)).strftime('%Y-%m'))
+        
+    #     date_x_data=[]
+        
+    #     for d in date_serise:
+    #         date_obj_start = datetime.datetime.strptime(d +'-01' , "%Y-%m-%d")
+    #         date_obj_end =  date_obj_start + relativedelta(months=1)
+    #         mylist = list(pt.filter(
+    #             performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+    #             ).values_list('value',flat=True))
+    #         date_x_data.append(mylist)
 
 
     adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
@@ -1528,17 +1688,38 @@ def graph_boxplot_by_date(request,family,station,
     fig = plt.Figure()
     #fig.suptitle('Box plot of %s  (all tester)' % parameter , fontsize=14, fontweight='bold')
     fig.subplots_adjust(**adjustprops)
-    ax = fig.add_subplot(111) #211 ,111
-    ax.boxplot(date_x_data,labels=date_labels)#rs
+    fig.patch.set_facecolor('white')
+    # plt.tick_params(axis='both', which='major', labelsize=24)
+    # plt.tick_params(axis='both', which='minor', labelsize=18)
 
-    ax.set_xticklabels( date_labels, rotation=60,ha='right')
+    ax = fig.add_subplot(111) #211 ,111
+    # ax.set_axis_bgcolor('red')
+    bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)#rs
+    #,fontsize=18
+    ax.set_xticklabels( date_labels, rotation=0,ha='center')
     ax.set_title('By %s' % date_range)
+
+    zed = [tick.label.set_fontsize(18) for tick in ax.yaxis.get_major_ticks()]
+    zed = [tick.label.set_fontsize(18) for tick in ax.xaxis.get_major_ticks()]
 
     if not means == None :
         ax.axhline(y=means,color='g' ,ls='dashed')
     
 
-    ax.set_title('%s  (%s : %s)' % (parameter,family,station_name))
+    ax.set_title('%s  (%s : %s)' % (parameter,family,station_name),fontsize=22)
+    
+    #Put Text on Graph
+    import numpy as np
+    for line in bp_dict['medians']:
+        # get position data for median line
+        x, y = line.get_xydata()[1] # top of median line
+        # overlay median value
+        if not np.isnan(y):
+            ax.text(x, y, '%.2f' % y,
+            verticalalignment='bottom',ha='right',fontsize=14) # draw above, centered
+        
+
+
     #myFmt = mdates.DateFormatter('%d')
     #ax.xaxis.set_major_formatter(myFmt)
     #ax.set_xticks(date_labels)
@@ -1553,7 +1734,7 @@ def graph_boxplot_by_date(request,family,station,
     # ax.set_xlabel('model: %s  / operation: %s' % (model_name,operation_name))
     #fig.set_size_inches(13,8, forward=True)
     fig.tight_layout()
-    canvas=FigureCanvas(fig)
+    canvas=FigureCanvas(fig )
     response=django.http.HttpResponse(content_type='image/png')
     canvas.print_png(response)
     return response

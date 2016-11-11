@@ -88,7 +88,7 @@
 
              <!-- Parameter Section -->
              {% for param in parameter|critical_station:item.station %}
-              <div class="col-md-4 col-sm-6 col-xs-12">
+              <div class="col-md-3 col-sm-4 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title" id="each_param">
                     <h2>{{param.name}}<small></small></h2>
@@ -100,8 +100,12 @@
                         <ul class="dropdown-menu" role="menu" id="oneAnswer">
                           <li><a id="changeurl" station={{item.station}} parameter={{param.name}} 
                           datefrom={{data.date_from}} dateto={{data.date_to}}
-                          href= "{% url 'graph_distribution_by_range' data.family item.station param.name data.mode %}" >Show Distribution</a>
+                          href= "{% url 'spc_cpk_station' data.family item.station param.name|to_slash data.mode %}" >Show Cp/Cpk</a>
                           </li>
+
+                          <li><a id="spc_data" href= "{% url 'graph_distribution_by_range' data.family item.station param.name|to_slash data.mode %}" >Show Distribution</a>
+                          </li>
+
                         </ul>
                       </li>
                       <li><a class="close-link"><i class="fa fa-close"></i></a>
@@ -111,7 +115,7 @@
                   </div>
                   <div id="graph-body" class="x_content">
                   <!--   Start Content -->
-                  <img class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{item.station}}/{{param.name|to_slash}}/7day/">
+                  <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{item.station}}/{{param.name|to_slash}}/7day/">
 
                   <!-- SPC details -->
                   <!-- <div>
