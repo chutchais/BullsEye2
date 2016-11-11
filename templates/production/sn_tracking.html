@@ -85,7 +85,7 @@
                           <td>{{item.station}}</td>
                           <td>{{item.station.name}}</td>
                           <td>{{item.loop}}</td>
-                          <td>{{item.tester}}</td>
+                          <td><a href= "{% url 'unit_parameter_data' item.pk  %}" >{{item.tester}}</a></td>
                           <td>{{item.started_date}}</td>
                           <!-- <td>{{item.finished_date}}</td> -->
                           <td>{{item.result}}</td>

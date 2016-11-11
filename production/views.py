@@ -1162,6 +1162,25 @@ def unit_tracking(request,sn):
     }
     return render(request, 'production/sn_tracking.html',context)
 
+def unit_parameter_data(request,key):
+    # form = snTrackingForm(request.POST or None ,initial={'sn': sn})
+    # queryset=None
+    # if form.is_valid():
+    #     sn = form.cleaned_data["sn"]
+    #         #print (sn)
+    print ('Parameter Details')
+    queryset=PerformingDetails.objects.filter(performing__pk=key)
+
+    data ={
+        "sn" : key,
+        "title" : "Parameter Data",
+        "queryset" : queryset
+    }
+    context ={
+        "data": data,
+    }
+    return render(request, 'production/parameter_tracking.html',context)
+
 
 #SN tracking - Parameter
 #def unit_tracking_parameter(request,sn,station):
