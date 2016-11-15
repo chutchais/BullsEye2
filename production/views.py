@@ -1172,7 +1172,8 @@ def unit_parameter_data(request,key):
     queryset=PerformingDetails.objects.filter(performing__pk=key)
 
     data ={
-        "sn" : key,
+        "sn" : queryset[0].performing.sn_wo.sn,
+        "workorder" : queryset[0].performing.sn_wo.workorder,
         "title" : "Parameter Data",
         "queryset" : queryset
     }
