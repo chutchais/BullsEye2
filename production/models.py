@@ -289,3 +289,31 @@ class DocumentRelated(models.Model):
 	details = models.CharField(max_length=255)
 	created_date = models.DateTimeField(auto_now_add=True)
 	user = models.ForeignKey('auth.User',blank=True,null=True)
+
+
+class Components(models.model):
+	part_id = models.CharField(max_length=50,primary_key=True)
+	part_no = models.CharField(max_length=100,db_index=True)
+	mfg_name =models.CharField(max_length=100)
+	mfg_partno =models.CharField(max_length=100,db_index=True)
+	mfg_lotcode= models.CharField(max_length=50,db_index=True)
+	mfg_datecode = models.CharField(max_length=50,db_index=True)
+	rtno = models.CharField(max_length=50,db_index=True)
+	created_date = models.DateTimeField(auto_now_add=True)
+	user = models.ForeignKey('auth.User',blank=True,null=True)
+
+
+class ComponentsTracking(models.model):
+	ACTIVE = 'ACTIVE'
+	REMOVE = 'REMOVE'
+	STATUS_CHOICES = (
+        (ACTIVE, 'Active'),
+        (REMOVE, 'Removed'),
+    )
+	part = models.ForeignKey('Components' ,related_name='component_list')
+	sn_wo = models.ForeignKey('WorkOrderDetails' ,related_name='component_tracking')
+	rd = models.CharField(max_length=50,db_index=True)
+	station = models.ForeignKey('Station' ,related_name='component_part',blank=True,null=True,db_index=True)
+	status = models.CharField(max_length=10,choices=STATUS_CHOICES,default=ACTIVE)
+	created_date = models.DateTimeField(auto_now_add=True)
+	user = models.ForeignKey('auth.User',blank=True,null=True)
