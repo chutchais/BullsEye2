@@ -291,7 +291,7 @@ class DocumentRelated(models.Model):
 	user = models.ForeignKey('auth.User',blank=True,null=True)
 
 
-class Components(models.model):
+class Components(models.Model):
 	part_id = models.CharField(max_length=50,primary_key=True)
 	part_no = models.CharField(max_length=100,db_index=True)
 	mfg_name =models.CharField(max_length=100)
@@ -302,8 +302,11 @@ class Components(models.model):
 	created_date = models.DateTimeField(auto_now_add=True)
 	user = models.ForeignKey('auth.User',blank=True,null=True)
 
+	def __str__(self):
+		return ("%s" % (self.part_no))
 
-class ComponentsTracking(models.model):
+
+class ComponentsTracking(models.Model):
 	ACTIVE = 'ACTIVE'
 	REMOVE = 'REMOVE'
 	STATUS_CHOICES = (
@@ -317,3 +320,6 @@ class ComponentsTracking(models.model):
 	status = models.CharField(max_length=10,choices=STATUS_CHOICES,default=ACTIVE)
 	created_date = models.DateTimeField(auto_now_add=True)
 	user = models.ForeignKey('auth.User',blank=True,null=True)
+
+	def __str__(self):
+		return ("%s" % (self.rd))
