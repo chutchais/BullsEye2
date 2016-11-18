@@ -1,5 +1,7 @@
 
 *.pyc
 production/*.pyc
+production/migrations/*.pyc
+production/migrations/*.py
 shopfloor/*.pyc
 production/migrations/*.py
