@@ -26,6 +26,8 @@ from django.contrib.auth.models import User
 from .models import Performing
 from .models import PerformingDetails
 from .models import Parameter
+from .models import Components
+from .models import ComponentsTracking
 
 from datetime import datetime, timedelta
 from django.db.models import Count,Sum
@@ -1118,14 +1120,39 @@ def execute_transaction(xml):
 
             if objParam.activated :
                 #To put data into Value field
-
-
                 objPerformingDetails =PerformingDetails.objects.create(performing=objPerforming,parameter=objParam,
                     value_str=value,result=each_result,created_date=dateinTz,user=objUser,
                     limit_min=min_limit,limit_max=max_limit)
                 if is_Float(value):
                     objPerformingDetails.value=float(value)
                     objPerformingDetails.save()
+
+        #10)Component tracking
+        for partElement in root.findall('components/part'):
+            #part master
+            part_id = partElement.attrib['part_id']
+            part_no = partElement.attrib['part_no']
+            mfg_partno = partElement.attrib['mfg_partno']
+            mfg_datecode = partElement.attrib['mfg_datecode']
+            mfg_lotcode = partElement.attrib['mfg_lotcode']
+            mfg_name = partElement.attrib['mfg_name']
+            rtno = partElement.attrib['rtno']
+            #part details
+            rd = partElement.attrib['rd']
+            part_sn = partElement.text
+            #10.1)Add Part master to Components
+            objComponent,created=Components.objects.get_or_create(part_id=part_id)
+            if created:
+                objComponent.part_no=part_no
+                objComponent.mfg_partno=part_no
+                objComponent.mfg_datecode=mfg_datecode
+                objComponent.mfg_lotcode=mfg_lotcode
+                objComponent.mfg_name=mfg_name
+                objComponent.rtno=rtno
+                objComponent.save()
+            #10.2)Add Part details
+            objPart = ComponentsTracking.objects.create(part=objComponent,sn_wo=objSnWoDetails,rd=rd,
+                station=objStation,user=objUser)
 
 
         return ("Successful")
