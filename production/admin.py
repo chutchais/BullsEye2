@@ -18,6 +18,9 @@ from .models import Parameter
 from .models import DocumentControls
 from .models import DocumentLogs
 from .models import DocumentRelated
+from .models import Components
+from .models import ComponentsTracking
+
 
 class BomDetailsInline(admin.TabularInline):
     model = BomDetails
@@ -173,4 +176,18 @@ class DocumentControlsAdmin(admin.ModelAdmin):
     
 admin.site.register(DocumentControls,DocumentControlsAdmin)
 
+class ComponentsTrackingInline(admin.TabularInline):
+    model = ComponentsTracking
+    extra = 1
+    
+class ComponentsAdmin(admin.ModelAdmin):
+    search_fields = ['part_id','part_no','mfg_name','mfg_partno','mfg_datecode','mfg_lotcode','rtno']
+    list_filter = ['mfg_name']
+    list_display = ('part_id','part_no','mfg_name','mfg_partno','mfg_datecode','mfg_lotcode','rtno')
+    fieldsets = [
+        (None,               {'fields': ['part_id','part_no','mfg_name','mfg_partno','mfg_datecode','mfg_lotcode','rtno']}),
+    ]
+    inlines = [ComponentsTrackingInline]
+    
+admin.site.register(Components,ComponentsAdmin)
 
