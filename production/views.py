@@ -1177,11 +1177,14 @@ def unit_tracking(request,sn):
             #print (sn)
         
     queryset=Performing.objects.filter(sn_wo__sn=sn)
+    components=ComponentsTracking.objects.filter(sn_wo__sn=sn)
 
     data ={
         "sn" : sn,
         "title" : "Serial number tracking",
-        "queryset" : queryset
+        "queryset" : queryset,
+        "components" : components
+
     }
     context ={
         "data": data,

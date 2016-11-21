@@ -214,7 +214,7 @@ class PerformingDetails(models.Model):
 	performing = models.ForeignKey('Performing' ,related_name='performingdetail_list')
 	parameter = models.ForeignKey('Parameter' ,related_name='performing_used',db_index=True)
 	value = models.FloatField(null=True, blank=True)
-	value_str = models.CharField(max_length=50,null=True, blank=True)
+	value_str = models.CharField(max_length=255,null=True, blank=True)
 	limit_min = models.FloatField(null=True, blank=True)
 	limit_max = models.FloatField(null=True, blank=True)
 	value_type = models.CharField(max_length=10,choices=VALUE_CHOICES,default=S)
