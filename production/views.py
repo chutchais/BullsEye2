@@ -1177,14 +1177,12 @@ def unit_tracking(request,sn):
             #print (sn)
         
     queryset=Performing.objects.filter(sn_wo__sn=sn)
-    components=ComponentsTracking.objects.filter(sn_wo__sn=sn)
+    # components=ComponentsTracking.objects.filter(sn_wo__sn=sn)
 
     data ={
         "sn" : sn,
         "title" : "Serial number tracking",
-        "queryset" : queryset,
-        "components" : components
-
+        "queryset" : queryset
     }
     context ={
         "data": data,
@@ -1277,11 +1275,18 @@ def graph_distribution(request,family,station,
     #     parameter__name=parameter,
     #     performing__sn_wo__workorder__product__family__name=family,
     #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+    
+
+    # pt = PerformingDetails.objects.filter(
+    #     performing__started_date__range=[date_from,date_to],
+    #     parameter__name=parameter,
+    #     performing__sn_wo__workorder__product__family__name=family,
+    #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
     pt = PerformingDetails.objects.filter(
         performing__started_date__range=[date_from,date_to],
         parameter__name=parameter,
         performing__sn_wo__workorder__product__family__name=family,
-        performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+        performing__station__station=station).exclude(value = None)
 
 
     if pt.count()==0:
@@ -1614,7 +1619,7 @@ def graph_boxplot_by_date(request,family,station,
         performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
         parameter__name=parameter,
         performing__sn_wo__workorder__product__family__name=family,
-        performing__station__station=station)
+        performing__station__station=station).exclude(value = None)
 
     if pt.count()>0:
         station_name=pt[0].performing.station.name

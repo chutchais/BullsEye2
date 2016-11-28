@@ -82,13 +82,13 @@
                       <tbody>
                       {% for item in data.queryset %}
                         <tr>
-                          <th scope="row">{{forloop.counter}}</th>
+                          <!-- <th scope="row">{{forloop.counter}}</th> -->
                           <!-- <td>{{item.sn_wo.sn}}</td> -->
-                          <!-- <td>{{item.sn_wo.workorder}}</td> -->
+                          <td>{{item.parameter.name}}</td>
                           <td>{{item.parameter}}</td>
                           <td>{{item.limit_min}}</td>
                           <td>{{item.limit_max}}</td>
-                          <td>{{item.value}}</td>
+                          <td>{{item.value_str}}</td>
                           <td>{{item.result}}</td>
 <!--                           <td>{{item.loop}}</td>
                           <td><a href= "{% url 'unit_parameter_data' item.pk  %}" >{{item.tester}}</a></td>

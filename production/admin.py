@@ -132,10 +132,10 @@ admin.site.register(Performing,PerformingAdmin)
 
 class FamilyAdmin(admin.ModelAdmin):
     search_fields = ['name']
-    list_filter = ['name']
-    list_display = ('name','description','created_date','modified_date')
+    list_filter = ['name','critical']
+    list_display = ('name','description','critical','created_date','modified_date')
     fieldsets = [
-        (None,               {'fields': ['name','description']}),
+        (None,               {'fields': ['name','description','critical']}),
     ]
     
 admin.site.register(Family,FamilyAdmin)

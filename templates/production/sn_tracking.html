@@ -102,7 +102,7 @@
               <!-- End Tracking details -->
 
               <!-- Component Tracking details -->
-              <div class="col-md-9 col-sm-9 col-xs-12">
+<!--               <div class="col-md-9 col-sm-9 col-xs-12">
                 <div class="x_panel">
                   <div class="x_title">
                     <h2>Component Traceability<small>..</small></h2>
@@ -133,24 +133,13 @@
                           <th>Mfg Name</th>
                           <th>Mfg DateCode</th>
                           <th>Mfg Lot</th>
-<!--                           <th>Dispose Code</th>
-                          <th>User</th> -->
+                          <th>Dispose Code</th>
+                          <th>User</th>
                         </tr>
                       </thead>
                       <tbody>
                       {% for item in data.components %}
                         <tr>
-                       <!--    <th scope="row">{{forloop.counter}}</th> -->
-                          <!-- <td>{{item.sn_wo.sn}}</td> -->
-                          <!-- <td>{{item.sn_wo.workorder}}</td> -->
-<!--                           <td>{{item.station}}</td>
-                          <td>{{item.station.name}}</td>
-                          <td>{{item.loop}}</td>
-                          <td><a href= "{% url 'unit_parameter_data' item.pk  %}" >{{item.tester}}</a></td>
-                          <td>{{item.started_date}}</td> -->
-                          <!-- <td>{{item.finished_date}}</td> -->
-<!--                           <td>{{item.result}}</td>
-                          <td>{{item.dispose_code}}</td> -->
                           <td>{{item.rd}}</td>
                           <td>{{item.part.part_no}}</td>
                           <td>{{item.part.mfg_partno}}</td>
@@ -164,7 +153,7 @@
 
                   </div>
                 </div>
-              </div>
+              </div>  -->
               <!-- End Component Tracking details -->
 
 
