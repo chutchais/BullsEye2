@@ -37,6 +37,14 @@ import json
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 
+def get_family(request):
+    #campus = models.Campus.objects.get(pk=campus_id)
+    fam = Family.objects.filter(critical=True).order_by('name')
+    family_dict = {}
+    for f in fam:
+        family_dict[f.name] = f.name
+    return HttpResponse(json.dumps(family_dict))
+
 def get_station(request, family):
     #campus = models.Campus.objects.get(pk=campus_id)
     stations = Station.objects.filter(family__name=family,critical=True).order_by('ordering')
