@@ -1222,6 +1222,163 @@ def unit_parameter_data(request,key):
 #SN tracking - Parameter
 #def unit_tracking_parameter(request,sn,station):
 
+def graph_histogram_by_range(request,family,station,parameter,date_range ='7day'):
+    import datetime
+    from datetime import date
+
+    if date_range=='6week':
+        default_start = date.today()  - datetime.timedelta(days=42)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
+        group_by='week'
+    elif date_range=='14day':
+        default_start = date.today()  - datetime.timedelta(days=14)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
+        group_by='date'
+    elif date_range=='4month':
+        default_start = date.today()  - relativedelta(months=4)
+        date_to = datetime.datetime.strftime(date.today()+ relativedelta(months=1),"%Y-%m-%d")
+        group_by='month'
+    else: #7days
+        default_start = date.today()  - datetime.timedelta(days=7)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
+        group_by='date'
+
+    date_from= datetime.datetime.strftime(default_start,"%Y-%m-%d")
+    
+
+    print ('Histogram by Range from %s to %s' % (date_from,date_to))
+
+    return graph_histogram(request,family,station,date_from,date_to,parameter)
+
+def graph_histogram(request,family,station,
+                          date_from,date_to,parameter):
+    import numpy as np
+    import matplotlib.mlab as mlab
+    import matplotlib.pyplot as plt
+    import django
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    from matplotlib.figure import Figure
+    from matplotlib import pyplot as plt
+    
+
+    #Query data
+    import datetime
+    from django.db.models import Count,Max,Min,Avg,StdDev
+    date_from = datetime.datetime.strptime(date_from,'%Y-%m-%d')
+    date_to = datetime.datetime.strptime(date_to,'%Y-%m-%d')
+
+    from django.utils import timezone
+    # current_tz = timezone.get_current_timezone()
+    # date_from=current_tz.localize(date_from )
+    # date_to =current_tz.localize (date_to )
+    print ('Graph distribution input data : %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
+    #replace  -slash- with /
+    parameter=parameter.replace('-slash-','/')
+
+    from django.db.models import F
+    # pt = PerformingDetails.objects.filter(
+    #     performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #     performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #     parameter__name=parameter,
+    #     performing__sn_wo__workorder__product__family__name=family,
+    #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+    
+
+    # pt = PerformingDetails.objects.filter(
+    #     performing__started_date__range=[date_from,date_to],
+    #     parameter__name=parameter,
+    #     performing__sn_wo__workorder__product__family__name=family,
+    #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+    pt = PerformingDetails.objects.filter(
+        performing__started_date__range=[date_from,date_to],
+        parameter__name=parameter,
+        performing__sn_wo__workorder__product__family__name=family,
+        performing__station__station=station).exclude(value = None)
+
+
+    if pt.count()==0:
+        print ('No data %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
+        return HttpResponse("Not Found Data")
+
+
+    #get Aggregate data
+    means = pt.aggregate(mean=Avg('value')).get('mean')
+    stddev = pt.aggregate(stddev=StdDev('value')).get('stddev')
+
+    max_value  = pt.aggregate(max=Max('value')).get('max')
+    min_value  = pt.aggregate(min=Min('value')).get('min')
+
+    x = pt.values_list('value', flat=True)
+
+    limit_min = pt.aggregate(min=Max('limit_min')).get('min')
+    limit_max = pt.aggregate(max=Min('limit_max')).get('max')
+
+    # F = gcf()
+    # Size = F.get_size_inches()
+    # fig = plt.Figure(figsize=(15,8))
+    fig = plt.Figure(figsize=(15,8))
+    fig.patch.set_facecolor('white')
+
+    ax = fig.add_subplot(111) #211 ,111
+   
+    # example data
+    mu = means #100  # mean of distribution
+    sigma = stddev #15  # standard deviation of distribution
+    #x = mu + sigma * np.random.randn(10000)
+    import math
+    #num_bins = 20 if pt.count()>100 else pt.count()
+    num_bins =math.ceil(((max_value-min_value)/stddev))*2
+
+    # the histogram of the data
+    
+    #print ('Min : %s , Max: %s  , def: %s , num : %s' % (min_value,max_value,max_value-min_value,num_bins))
+    n, bins, patches = ax.hist(x, num_bins, normed=1, facecolor='green', alpha=0.7)
+    #binwidth=1.0
+    #n, bins, patches = ax.hist(x, np.arange(min(x), max(x) + binwidth, binwidth), normed=1, facecolor='green', alpha=0.7)
+    #print (bins)
+    # add a 'best fit' line
+    # print (x.count())
+    # print (n)
+    # print (bins)
+
+    y = mlab.normpdf(bins, mu, sigma)
+
+    #ax.plot(x,cl,linestyle='-',color='black', linewidth=2)
+
+    #ax.set_xlim(limit_min,limit_max)
+
+    ax.plot(bins, y, 'r--')
+    #ax.set_xlabel('%s on %s' % (parameter,tester))
+    #Cp/Cpk
+    Cp = (limit_max-limit_min)/(6*sigma)
+    Cpl = (means-limit_min)/(3*sigma)
+    Cpu = (limit_max-means)/(3*sigma)
+    Cpk = Cpl if Cpl < Cpu else Cpl
+    ax.set_ylabel('Probability')
+    ax.set_title(r'Histogram of %s : $\mu = %0.2f $, $\sigma=%0.2f$' % (parameter,means,stddev))
+    #ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
+
+    # draw a default vline at x=1 that spans the yrange
+    l = ax.axvline(x=limit_min)
+    ax.text(limit_min,max(y),('LSL=%s' % limit_min), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+
+    l = ax.axvline(x=limit_max)
+    ax.text(limit_max,max(y),('USL=%s' % limit_max), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+
+    ax.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
+
+    #fig.set_size_inches(13,8, forward=True)
+    fig.tight_layout()
+    canvas=FigureCanvas(fig)
+    response=django.http.HttpResponse(content_type='image/png')
+    canvas.print_png(response)
+    return response
+
+
 def graph_distribution_by_range(request,family,station,parameter,date_range ='7day'):
     import datetime
     from datetime import date
