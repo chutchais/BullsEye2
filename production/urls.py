@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^test/$', views.test, name='test'),
     url(r'^spc/cpk/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.spc_cpk_station, name='spc_cpk_station'),
     url(r'^spc/filter/get_family/', views.get_family, name='get_family'),
@@ -21,8 +22,11 @@ urlpatterns = [
 
     url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.graph_boxplot_by_date, name='graph_boxplot_by_date'),
+    url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/(?P<groupby>[-\w|\W\ ]+)/', 
+        views.graph_boxplot_by_range_group, name='graph_boxplot_by_range_group'),
     url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.graph_boxplot_by_range, name='graph_boxplot_by_range'),
+    
     url(r'^station/(?P<station>[-\w|\W\ ]+)/(?P<family>[-\w|\W\ ]+)/$', views.get_process, name='get_process'),
     url(r'^station/$', views.post_list, name='post_list'),
     url(r'^bom/$', views.RecipeCreateView, name='RecipeCreateView'),

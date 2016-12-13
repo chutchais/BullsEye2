@@ -1566,12 +1566,46 @@ def graph_boxplot(request,family,station,
     canvas.print_png(response)
     return response
 
-def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
+
+def test(request,family,station,parameter,date_range ='7day',by='date'):
+    if request.method == 'GET':
+        print ('GET......')
+        return HttpResponse('GET methode')
+    elif request.method == 'POST':
+        param = request.POST.get("q", "")
+        print ('POST......'+param)
+        return HttpResponse('POST methode param =' +param)
+
+def graph_boxplot_by_range_group(request,family,station,parameter,date_range ='7day',groupby='date'):
     import datetime
     from datetime import date
 
+    if date_range=='6week':
+        default_start = date.today()  - datetime.timedelta(days=42)
+        group_by='week'
+    elif date_range=='14day':
+        default_start = date.today()  - datetime.timedelta(days=14)
+        group_by='date'
+    elif date_range=='4month':
+        default_start = date.today()  - datetime.timedelta(days=120)
+        group_by='month'
+    else: #7days
+        default_start = date.today()  - datetime.timedelta(days=7)
+        group_by='date'
 
+    date_from= datetime.datetime.strftime(default_start,"%Y-%m-%d")
+    date_to = datetime.datetime.strftime(date.today(),"%Y-%m-%d")
 
+    if groupby != 'date':
+        group_by = groupby
+
+    print ('from %s to %s' % (date_from,date_to))
+
+    return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
+
+def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
+    import datetime
+    from datetime import date
 
     if date_range=='6week':
         default_start = date.today()  - datetime.timedelta(days=42)
@@ -1681,29 +1715,17 @@ def graph_boxplot_by_date(request,family,station,
         last_month_number=5
         last_week_number=20
         date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
-        # (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
-        # date_from = begin_of_month
-        # (current_year,current_week,day_of_week)=date_to.isocalendar()
         from dateutil.relativedelta import relativedelta
         (begin_of_to_week,end_of_to_week)=week_magic (date_to) #Get last day of week.
         (current_year,current_to_week,day_of_to_week)=date_to.isocalendar()
 
         date_from = end_of_to_week - relativedelta(months=last_month_number)
         (current_year,current_from_week,day_of_from_week)=date_from.isocalendar()
-        # (current_year,current_week,day_of_week)=date_to.isocalendar()
-        
-        # delta= last_month_number
-        # date_labels = [date_from.strftime('%b')]
-        # date_serise = [date_from.strftime('%Y-%m')]
+
         delta= current_to_week-current_from_week
         date_labels = [date_from.strftime('W%W')]
         date_serise = [date_from.strftime('%Y-W%W')]
-        # from dateutil.relativedelta import relativedelta
-        # for i in range(1,delta):
-        #     date_labels.append((date_from + relativedelta(months=i)).strftime('%b'))
-        #     date_serise.append((date_from + relativedelta(months=i)).strftime('%Y-%m'))
-        
-        # date_x_data=[]
+
         for i in range(1,delta):
             if (i%4)==0:
                 date_labels.append((date_from + datetime.timedelta(days=i*7)).strftime('W%W'))
@@ -1712,19 +1734,35 @@ def graph_boxplot_by_date(request,family,station,
             date_serise.append((date_from + datetime.timedelta(days=i*7)).strftime('%Y-W%W'))
         date_x_data=[]
         
-        # for d in date_serise:
-        #     date_obj_start = datetime.datetime.strptime(d +'-01' , "%Y-%m-%d")
-        #     date_obj_end =  date_obj_start + relativedelta(months=1)
-        #     mylist = list(pt.filter(
-        #         performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
-        #         ).values_list('value',flat=True))
-        #     date_x_data.append(mylist)
+
         for d in date_serise:
             date_obj_start = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
             date_obj_end =  date_obj_start + datetime.timedelta(days=7)
             mylist = list(pt.filter(
                 performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
                 ).values_list('value',flat=True))
+            date_x_data.append(mylist)
+
+    if date_range=='tester':
+        date_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
+        date_x_data=[]
+        for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
+            mylist = list(pt.filter(performing__tester=tester).values_list('value',flat=True))
+            # mylist.remove(max(mylist))
+            date_x_data.append(mylist)
+
+    if date_range=='part':
+        date_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
+        date_x_data=[]
+        for product in pt.distinct('performing__sn_wo__workorder__product').values_list('performing__sn_wo__workorder__product',flat=True):
+            mylist = list(pt.filter(performing__sn_wo__workorder__product=product).values_list('value',flat=True))
+            date_x_data.append(mylist)
+
+    if date_range=='operator':
+        date_labels =pt.distinct('performing__user').values_list('performing__user',flat=True)
+        date_x_data=[]
+        for user in pt.distinct('performing__user').values_list('performing__user',flat=True):
+            mylist = list(pt.filter(performing__user=user).values_list('value',flat=True))
             date_x_data.append(mylist)
 
     # if date_range=='month':
@@ -1769,7 +1807,7 @@ def graph_boxplot_by_date(request,family,station,
     # bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)
     #,fontsize=18
     ax.set_xticklabels( date_labels, rotation=0,ha='center')
-    ax.set_title('By %s' % date_range)
+    # ax.set_title('By %s' % date_range)
 
     zed = [tick.label.set_fontsize(18) for tick in ax.yaxis.get_major_ticks()]
     zed = [tick.label.set_fontsize(18) for tick in ax.xaxis.get_major_ticks()]
@@ -1779,7 +1817,8 @@ def graph_boxplot_by_date(request,family,station,
     
 
     ax.set_title('%s  (%s : %s)' % (parameter,family,station_name),fontsize=22)
-    
+    ax.set_xlabel('By %s' % date_range)
+
     #Put Text on Graph
     import numpy as np
     for line in bp_dict['medians']:
