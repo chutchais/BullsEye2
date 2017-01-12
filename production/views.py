@@ -1822,8 +1822,12 @@ def graph_boxplot_by_date(request,family,station,
 
     if pt.count()>0:
         station_name=pt[0].performing.station.name
+        param_desc=pt[0].parameter.description
+        total_sample=pt.count()
     else:
         station_name=station
+        param_desc=parameter
+        total_sample=0
 
     means = pt.aggregate(mean=Avg('value')).get('mean')
     print ('Total = %s , means = %s' %(pt.count(),means))
@@ -1840,8 +1844,12 @@ def graph_boxplot_by_date(request,family,station,
         for d in date_serise:
             date_obj_start=datetime.datetime.strptime(d,'%Y-%m-%d')
             date_obj_end =  date_obj_start + datetime.timedelta(days=1)
+            # mylist = list(pt.filter(
+            #     performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+            #     ).values_list('value',flat=True))
             mylist = list(pt.filter(
-                performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+                performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day),
+                performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
 
@@ -1863,8 +1871,12 @@ def graph_boxplot_by_date(request,family,station,
         for d in date_serise:
             date_obj_start = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
             date_obj_end =  date_obj_start + datetime.timedelta(days=7)
+            # mylist = list(pt.filter(
+            #     performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+            #     ).values_list('value',flat=True))
             mylist = list(pt.filter(
-                performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
+                performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day),
+                performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
 
@@ -1922,30 +1934,7 @@ def graph_boxplot_by_date(request,family,station,
             mylist = list(pt.filter(performing__user=user).values_list('value',flat=True))
             date_x_data.append(mylist)
 
-    # if date_range=='month':
-    #     last_month_number=5
-    #     date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
-    #     (begin_of_month,end_of_month)=month_magic (date_to,0,-4) #Get last day of week.
-    #     date_from = begin_of_month
-    #     (current_year,current_week,day_of_week)=date_to.isocalendar()
-        
-    #     delta= last_month_number
-    #     date_labels = [date_from.strftime('%b')]
-    #     date_serise = [date_from.strftime('%Y-%m')]
-    #     from dateutil.relativedelta import relativedelta
-    #     for i in range(1,delta):
-    #         date_labels.append((date_from + relativedelta(months=i)).strftime('%b'))
-    #         date_serise.append((date_from + relativedelta(months=i)).strftime('%Y-%m'))
-        
-    #     date_x_data=[]
-        
-    #     for d in date_serise:
-    #         date_obj_start = datetime.datetime.strptime(d +'-01' , "%Y-%m-%d")
-    #         date_obj_end =  date_obj_start + relativedelta(months=1)
-    #         mylist = list(pt.filter(
-    #             performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
-    #             ).values_list('value',flat=True))
-    #         date_x_data.append(mylist)
+
 
 
     adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
@@ -1963,7 +1952,12 @@ def graph_boxplot_by_date(request,family,station,
     #date_x_data=reject_outliers(date_x_data)
     # bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)
     #,fontsize=18
-    ax.set_xticklabels( date_labels, rotation=0,ha='center')
+    
+    #ax.set_xticklabels( date_labels, rotation=0,ha='center')
+    # ax.set_xticklabels(['%s\n$n$=%d'%(l, len(x)) for l, x in zip(date_labels,date_x_data)])
+    ax.set_xticklabels(['%s\n $%d$'%(l, len(x)) for l, x in zip(date_labels,date_x_data)])
+    
+
     # ax.set_title('By %s' % date_range)
 
     zed = [tick.label.set_fontsize(18) for tick in ax.yaxis.get_major_ticks()]
@@ -1973,20 +1967,40 @@ def graph_boxplot_by_date(request,family,station,
         ax.axhline(y=means,color='g' ,ls='dashed')
     
 
-    ax.set_title('%s  (%s : %s)' % (parameter,family,station_name),fontsize=22)
+    # ax.set_title('%s  (%s : %s)' % (parameter,family,station_name),fontsize=16)
+    ax.set_title('%s ($n$=%d)' % (param_desc,total_sample),fontsize=16)
     ax.set_xlabel('By %s' % date_range)
 
     #Put Text on Graph
     import numpy as np
-    for line in bp_dict['medians']:
+    ymin, ymax = ax.get_ylim()
+    for line,sample in zip(bp_dict['medians'],date_x_data):
         # get position data for median line
         x, y = line.get_xydata()[1] # top of median line
         # overlay median value
         if not np.isnan(y):
             ax.text(x, y, '%.2f' % y,
-            verticalalignment='bottom',ha='right',fontsize=14) # draw above, centered
-        
+            verticalalignment='bottom',ha='right',fontsize=12) # draw above, centered
 
+            # ax.text(x, ymax-ymax*0.05, '$n$=%d' % len(sample),
+            # verticalalignment='bottom',ha='right',fontsize=14) # draw above, centered
+            
+                
+    #0 # bottom of left line
+    #1 # bottom of right line
+    #2 # top of right line
+    #3 # top of left line
+
+    for line,sample in zip(bp_dict['boxes'],date_x_data):
+        x, y = line.get_xydata()[3] # bottom of left line
+        if len(sample)>0:
+            ax.text(x,y, '%.2f' % y,
+                 horizontalalignment='left', # centered
+                 verticalalignment='bottom',fontsize=8)      # below
+            x, y = line.get_xydata()[0] # bottom of right line
+            ax.text(x,y, '%.2f' % y,
+                 horizontalalignment='left', # centered
+                     verticalalignment='bottom',fontsize=8)      # below
 
     #myFmt = mdates.DateFormatter('%d')
     #ax.xaxis.set_major_formatter(myFmt)

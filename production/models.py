@@ -196,7 +196,7 @@ class Parameter(models.Model):
 	modified_date = models.DateTimeField(blank=True, null=True,auto_now=True)
 	user = models.ForeignKey('auth.User',blank=True,null=True)
 	activated = models.BooleanField(default=True)
-	critical = models.BooleanField(verbose_name ='Critical station?',default=False)
+	critical = models.BooleanField(verbose_name ='Critical parameter?',default=False)
 	ordering = models.IntegerField(default=1)
 	
 	def __str__(self):
