@@ -1756,7 +1756,7 @@ def graph_boxplot_by_range_group(request,family,station,parameter,date_range ='7
     if groupby != 'date':
         group_by = groupby
 
-    print ('from %s to %s' % (date_from,date_to))
+    print ('Range and Group from %s to %s' % (date_from,date_to))
 
     return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
 
@@ -1820,6 +1820,7 @@ def graph_boxplot_by_date(request,family,station,
         performing__sn_wo__workorder__product__family__name=family,
         performing__station__station=station).exclude(value = None)
 
+    adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
     if pt.count()>0:
         station_name=pt[0].performing.station.name
         param_desc=pt[0].parameter.description
@@ -1852,8 +1853,7 @@ def graph_boxplot_by_date(request,family,station,
                 performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
-
-    if date_range=='week':
+    elif date_range=='week':
         last_week_number=6
         date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
         (begin_of_week,end_of_week)=week_magic (date_to) #Get last day of week.
@@ -1879,8 +1879,7 @@ def graph_boxplot_by_date(request,family,station,
                 performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
-
-    if date_range=='month':
+    elif date_range=='month':
         last_month_number=5
         last_week_number=20
         date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
@@ -1912,32 +1911,74 @@ def graph_boxplot_by_date(request,family,station,
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
 
-    if date_range=='tester':
+    elif date_range=='tester':
         date_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
         date_x_data=[]
         for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
             mylist = list(pt.filter(performing__tester=tester).values_list('value',flat=True))
             # mylist.remove(max(mylist))
             date_x_data.append(mylist)
-
-    if date_range=='part':
+    elif date_range=='part':
         date_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
         date_x_data=[]
         for product in pt.distinct('performing__sn_wo__workorder__product').values_list('performing__sn_wo__workorder__product',flat=True):
             mylist = list(pt.filter(performing__sn_wo__workorder__product=product).values_list('value',flat=True))
             date_x_data.append(mylist)
-
-    if date_range=='operator':
+    
+    elif date_range=='operator':
         date_labels =pt.distinct('performing__user').values_list('performing__user',flat=True)
         date_x_data=[]
         for user in pt.distinct('performing__user').values_list('performing__user',flat=True):
             mylist = list(pt.filter(performing__user=user).values_list('value',flat=True))
             date_x_data.append(mylist)
 
+    else : #Parameter Name
+        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
+        pt_new=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,parameter__name=date_range) #list of target Parameter
+
+        if pt_new.count()>0 :
+            date_labels=pt_new.distinct('value_str').values_list('value_str',flat=True)
+            date_x_data=[]
+            for p in date_labels:
+                snlist_parameter= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,parameter__name=date_range,value_str=p).values_list('performing__sn_wo')
+                mylist = list(pt.filter(performing__sn_wo__in=snlist_parameter).values_list('value',flat=True))
+                date_x_data.append(mylist)
+            if pt_new.count()>0 :
+                date_range=pt_new[0].parameter.description
+        else:
+            # build a rectangle in axes coords
+            param_desc=Parameter.objects.filter(name=date_range)
+            left, width = .25, .5
+            bottom, height = .25, .5
+            right = left + width
+            top = bottom + height
+            fig = plt.Figure()
+            fig.subplots_adjust(**adjustprops)
+            fig.patch.set_facecolor('white')
+            ax = fig.add_subplot(111) #211 ,111
+            if param_desc.count()>0 :
+                p_desc=param_desc[0].description
+            else:
+                p_desc=date_range
+            
+            str='Not found data of Parameter :\n %s' % p_desc
+
+            ax.text(0.5*(left+right), 0.5*(bottom+top), str,
+                horizontalalignment='center',
+                verticalalignment='center',
+                fontsize=20, color='red',
+                transform=ax.transAxes)
+            fig.tight_layout()
+            canvas=FigureCanvas(fig )
+            response=django.http.HttpResponse(content_type='image/png')
+            canvas.print_png(response)
+            return response
 
 
 
-    adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
+
+
+    
 
     fig = plt.Figure()
     #fig.suptitle('Box plot of %s  (all tester)' % parameter , fontsize=14, fontweight='bold')
@@ -2001,24 +2042,11 @@ def graph_boxplot_by_date(request,family,station,
             ax.text(x,y, '%.2f' % y,
                  horizontalalignment='left', # centered
                      verticalalignment='bottom',fontsize=8)      # below
-
-    #myFmt = mdates.DateFormatter('%d')
-    #ax.xaxis.set_major_formatter(myFmt)
-    #ax.set_xticks(date_labels)
-    #ax.format_xdata = mdates.DateFormatter('%d')
-    #fig.autofmt_xdate()
-    
-
-
-    # ax.boxplot(x_data,labels=labels)#rs
-    # ax.set_xticklabels( labels, rotation=80,ha='right')
-    # #ax.set_title(r'Parameter : %s' % (parameter))
-    # ax.set_xlabel('model: %s  / operation: %s' % (model_name,operation_name))
-    #fig.set_size_inches(13,8, forward=True)
     fig.tight_layout()
     canvas=FigureCanvas(fig )
     response=django.http.HttpResponse(content_type='image/png')
     canvas.print_png(response)
+
     return response
 
 # def reject_outliers2(data, m=2):
