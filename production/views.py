@@ -1933,10 +1933,23 @@ def graph_boxplot_by_date(request,family,station,
             date_x_data.append(mylist)
 
     else : #Parameter Name
-        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
-        pt_new=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,parameter__name=date_range) #list of target Parameter
+        #1)check Parameter exist in system
+        param_req=Parameter.objects.filter(name=date_range)
+        if param_req.count() ==0 :
+            return drawEmptyGraph(date_range,'Parameter %s does not exist in system' % date_range)
 
-        if pt_new.count()>0 :
+        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
+        # newStationList=param_req.values_list('group')#station list of input parameter-->New Add
+
+        #Check First Serial ,Is it same level
+        pt_new=PerformingDetails.objects.filter(performing__sn_wo= pt.first().performing.sn_wo,
+                        parameter__name=date_range) #list of target Parameter
+       
+        if pt_new.count()>0 : #Parameter in same Level
+            #get parameter of all sn 
+            pt_new=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+                        parameter__name=date_range) #list of target Parameter
+
             date_labels=pt_new.distinct('value_str').values_list('value_str',flat=True)
             date_x_data=[]
             for p in date_labels:
@@ -1945,34 +1958,26 @@ def graph_boxplot_by_date(request,family,station,
                 date_x_data.append(mylist)
             if pt_new.count()>0 :
                 date_range=pt_new[0].parameter.description
-        else:
-            # build a rectangle in axes coords
-            param_desc=Parameter.objects.filter(name=date_range)
-            left, width = .25, .5
-            bottom, height = .25, .5
-            right = left + width
-            top = bottom + height
-            fig = plt.Figure()
-            fig.subplots_adjust(**adjustprops)
-            fig.patch.set_facecolor('white')
-            ax = fig.add_subplot(111) #211 ,111
-            if param_desc.count()>0 :
-                p_desc=param_desc[0].description
-            else:
-                p_desc=date_range
-            
-            str='Not found data of Parameter :\n %s' % p_desc
+        else: #either parameter not existing or in another Level.
+            #1)get setting value of Product
+            from django.conf import settings
+            param_setting = getattr(settings, "PCBA_SN", None)
+            if param_setting == None:
+                return drawEmptyGraph(date_range,'No PCBA Serial number attribute configuration')
 
-            ax.text(0.5*(left+right), 0.5*(bottom+top), str,
-                horizontalalignment='center',
-                verticalalignment='center',
-                fontsize=20, color='red',
-                transform=ax.transAxes)
-            fig.tight_layout()
-            canvas=FigureCanvas(fig )
-            response=django.http.HttpResponse(content_type='image/png')
-            canvas.print_png(response)
-            return response
+            att_family =param_setting.get(family)
+            if att_family == '':
+                return drawEmptyGraph(date_range,'Not found PCBA Serial number configuration of %s' % family )
+            # #2)Get list for attribute of PIC Serial number
+            # param_list=[att_family[k] for k in att_family]
+            # pt_pcb=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+            #             performing__station__station__in =newStationList,
+            #             parameter__name__in=param_list) #list of target Parameter
+            # pcbsnlist = pt_pcb.values_list('value')#Sn list in Main operation
+            # #pcbsnlist+date_range
+
+
+            return drawEmptyGraph(date_range)
 
 
 
@@ -2060,6 +2065,45 @@ def graph_boxplot_by_date(request,family,station,
 #     mdev = np.median(d)
 #     s = d/mdev if mdev else 0.
 #     return data[s<m]
+
+def drawEmptyGraph(date_range,message=None):
+    import matplotlib.mlab as mlab
+    import matplotlib.pyplot as plt
+    import django
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    from matplotlib.figure import Figure
+    from matplotlib import pyplot as plt
+    adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
+    param_desc=Parameter.objects.filter(name=date_range)
+    left, width = .25, .5
+    bottom, height = .25, .5
+    right = left + width
+    top = bottom + height
+    fig = plt.Figure()
+    fig.subplots_adjust(**adjustprops)
+    fig.patch.set_facecolor('white')
+    ax = fig.add_subplot(111) #211 ,111
+    if param_desc.count()>0 :
+        p_desc=param_desc[0].description
+    else:
+        p_desc=date_range
+    str='Not found data of Parameter :\n %s' % p_desc
+    if message :
+        str= message     
+    
+
+    ax.text(0.5*(left+right), 0.5*(bottom+top), str,
+        horizontalalignment='center',
+        verticalalignment='center',
+        fontsize=20, color='red',
+        transform=ax.transAxes)
+    fig.tight_layout()
+    canvas=FigureCanvas(fig )
+    response=django.http.HttpResponse(content_type='image/png')
+    canvas.print_png(response)
+    return response
+
+
 
 def box_plot(ax,data,means,title=''):
     #import numpy as np

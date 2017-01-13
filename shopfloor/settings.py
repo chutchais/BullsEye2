@@ -161,5 +161,16 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+PCBA_SN = {
+    'CFP':{
+        'ATTR_CODE1':'110003'
+    },
+    'CFP GLACIER' :{
+        'ATTR_CODE1':'101122'
+    },
+    'AC400' :{
+        'ATTR_CODE1':'111351',
+        'ATTR_CODE2':'111354'
+    },
+}
 
