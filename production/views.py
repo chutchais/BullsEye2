@@ -1786,7 +1786,7 @@ def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
 
 def graph_boxplot_by_date(request,family,station,
                           date_from,date_to,parameter,date_range='date'):
-    import numpy as np
+    # import numpy as np
     import matplotlib.mlab as mlab
     import matplotlib.pyplot as plt
     import django
@@ -2042,7 +2042,8 @@ def graph_boxplot_by_date(request,family,station,
             ax.text(x,y, '%.2f' % y,
                  horizontalalignment='left', # centered
                      verticalalignment='bottom',fontsize=8)      # below
-    fig.tight_layout()
+    # fig.tight_layout()
+    fig.set_tight_layout(True)
     canvas=FigureCanvas(fig )
     response=django.http.HttpResponse(content_type='image/png')
     canvas.print_png(response)

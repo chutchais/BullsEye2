@@ -115,8 +115,9 @@
                   </div>
                   <div id="graph-body" class="x_content">
                   <!--   Start Content -->
-                  <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{item.station}}/{{param.name|to_slash}}/7day/">
-
+                  <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family item.station param.name|to_slash data.mode %}" >
+                    <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{item.station}}/{{param.name|to_slash}}/7day/">
+                  </a>
                   <!-- SPC details -->
                   <!-- <div>
                               <ul class="list-inline widget_tally">
@@ -218,14 +219,25 @@
                 $(this).attr("src", src_new);
 
                 
-                var href_old = $('#changeurl').attr("href");
-                var href_old = href_old.replace("7day/", "");
-                var href_old = href_old.replace("14day/", "");
-                var href_old = href_old.replace("6week/", "");
-                var href_old = href_old.replace("4month/", "");
-                var href_new =href_old +  range + '/'
-                $('#changeurl').attr("href", href_new);
+                // var href_old = $('#changeurl').attr("href");
+                // var href_old = href_old.replace("7day/", "");
+                // var href_old = href_old.replace("14day/", "");
+                // var href_old = href_old.replace("6week/", "");
+                // var href_old = href_old.replace("4month/", "");
+                // var href_new =href_old +  range + '/'
+                // $('#changeurl').attr("href", href_new);
             });
+
+            $('#graph-body a').each(function(){
+                var src_name = $(this).attr('href');          
+                var src_name = src_name.replace("7day/", "");
+                var src_name = src_name.replace("14day/", "");
+                var src_name = src_name.replace("6week/", "");
+                var src_name = src_name.replace("4month/", "");
+                var src_new =src_name +  range + '/';
+                $(this).attr('href', src_new);
+            });
+
             // $('body').css('cursor','auto');
             // $("div").css('cursor','auto');
             $('#oneAnswer li a').each(function (i) {
