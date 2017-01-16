@@ -1733,6 +1733,49 @@ def test(request,family,station,parameter,date_range ='7day',by='date'):
         print ('POST......'+param)
         return HttpResponse('POST methode param =' +param)
 
+def graph_relations(request,family,station,parameter,date_range ='7day',groupby='date'):
+    import datetime
+    from datetime import date
+
+    if date_range=='6week':
+        default_start = date.today()  - datetime.timedelta(days=42)
+        group_by='week'
+    elif date_range=='14day':
+        default_start = date.today()  - datetime.timedelta(days=14)
+        group_by='date'
+    elif date_range=='4month':
+        default_start = date.today()  - datetime.timedelta(days=120)
+        group_by='month'
+    else: #7days
+        default_start = date.today()  - datetime.timedelta(days=7)
+        group_by='date'
+
+    start_date= datetime.datetime.strftime(default_start,"%Y-%m-%d")
+    stop_date = datetime.datetime.strftime(date.today(),"%Y-%m-%d")
+
+    if groupby != 'date':
+        group_by = groupby
+
+    print ('Range and Group from %s to %s' % (start_date,stop_date))
+
+    data={
+        "title":"Relation Paremeter Data",
+        "family" : family,
+        "station" : station,
+        "parameter" :parameter,
+        "date_from_str":start_date,
+        "date_to_str":stop_date,
+        "date_from":start_date,
+        "date_to":stop_date,
+        }
+    print (station)
+    context ={
+        "data": data,
+        }
+    return render(request, 'production/spc_relations.html',context)
+    # return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
+
+
 def graph_boxplot_by_range_group(request,family,station,parameter,date_range ='7day',groupby='date'):
     import datetime
     from datetime import date
@@ -1953,13 +1996,17 @@ def graph_boxplot_by_date(request,family,station,
             date_labels=pt_new.distinct('value_str').values_list('value_str',flat=True)
             date_x_data=[]
             for p in date_labels:
-                snlist_parameter= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,parameter__name=date_range,value_str=p).values_list('performing__sn_wo')
+                
+                snlist_parameter= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+                    parameter__name=date_range,value_str=p).values_list('performing__sn_wo')
+
                 mylist = list(pt.filter(performing__sn_wo__in=snlist_parameter).values_list('value',flat=True))
                 date_x_data.append(mylist)
             if pt_new.count()>0 :
                 date_range=pt_new[0].parameter.description
         else: #either parameter not existing or in another Level.
             #1)get setting value of Product
+            print ('Start on query data on another Level')
             from django.conf import settings
             param_setting = getattr(settings, "PCBA_SN", None)
             if param_setting == None:
@@ -1968,16 +2015,71 @@ def graph_boxplot_by_date(request,family,station,
             att_family =param_setting.get(family)
             if att_family == '':
                 return drawEmptyGraph(date_range,'Not found PCBA Serial number configuration of %s' % family )
-            # #2)Get list for attribute of PIC Serial number
-            # param_list=[att_family[k] for k in att_family]
+            #2)Get list for attribute of PIC Serial number
+            param_list=[att_family[k] for k in att_family]
+            #3)Get list of PIC serial number from CFP level
+            qs_pic= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+                    parameter__name__in = param_list)
+
+            if qs_pic.count()==0:
+                return drawEmptyGraph(date_range,'Not found data of parameter %s' % param_list)
+
+            
+
+            snlist_pic = qs_pic.values_list('value_str',flat=True)
+            #3.1)Get Assembly Station
+            assyStation=qs_pic.first().performing.station
+            # print (qs_pic.count())
+            #4)Get list data of PIC level (Pic SN + Pic Parameter)
+            param_pic = date_range
+            # print (snlist_pic)
+            # print (param_pic)
+            qs_pic_data = PerformingDetails.objects.filter(performing__sn_wo__sn__in = snlist_pic,
+                    parameter__name=param_pic)
+            #5)get PIC parameter value
+            date_labels=qs_pic_data.distinct('value_str').values_list('value_str',flat=True)
+            if len(date_labels)==0:
+                return drawEmptyGraph(date_range,'Data of parameter is empty')
+
+
+            date_x_data=[]
+
+            # pt = PerformingDetails.objects.filter(
+            #     performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+            #     performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+            #     parameter__name=parameter,
+            #     performing__sn_wo__workorder__product__family__name=family).exclude(value = None)
+            pt_assy = PerformingDetails.objects.filter(
+                        performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+                        performing__station = assyStation,
+                        performing__sn_wo__in = snlist).exclude(value = None)
+            print ('Starting loop %s' % date_labels)
+            for p in date_labels:
+                print (p)
+                #5.1)Get list of PIC sn that used p value
+                qs_pic_used_p = qs_pic_data.filter(value_str=p)
+                snlist_pic_used_p = qs_pic_used_p.values_list('performing__sn_wo__sn',flat=True)
+
+                #5.2)Get CFP SN that param=XXXX and value_str=snlist_pic_used_p from CFP_List
+                qs_snlist_cfp = pt_assy.filter(value_str__in =snlist_pic_used_p)
+                sn_list_cfp = qs_snlist_cfp.values_list('performing__sn_wo',flat=True)
+                mylist = list(pt.filter(performing__sn_wo__in=sn_list_cfp).values_list('value',flat=True))
+                date_x_data.append(mylist)
+
+
+                print (qs_pic_used_p.count())
+                print (qs_snlist_cfp.count())
+            if qs_pic_data.count()>0 :
+                date_range= qs_pic_data[0].parameter.description + '  of ' + qs_pic_data[0].performing.sn_wo.workorder.product.family.name
+
             # pt_pcb=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
             #             performing__station__station__in =newStationList,
             #             parameter__name__in=param_list) #list of target Parameter
             # pcbsnlist = pt_pcb.values_list('value')#Sn list in Main operation
             # #pcbsnlist+date_range
 
-
-            return drawEmptyGraph(date_range)
+            # print (('%s  %s' ) % (assyStation,param_list))
+            # return drawEmptyGraph(len(date_labels))
 
 
 
@@ -2015,7 +2117,7 @@ def graph_boxplot_by_date(request,family,station,
 
     # ax.set_title('%s  (%s : %s)' % (parameter,family,station_name),fontsize=16)
     ax.set_title('%s ($n$=%d)' % (param_desc,total_sample),fontsize=16)
-    ax.set_xlabel('By %s' % date_range)
+    ax.set_xlabel('%s' % date_range)
 
     #Put Text on Graph
     import numpy as np

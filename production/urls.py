@@ -29,6 +29,9 @@ urlpatterns = [
         views.graph_boxplot_by_range_group, name='graph_boxplot_by_range_group'),
     url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.graph_boxplot_by_range, name='graph_boxplot_by_range'),
+
+    url(r'^graph/relations/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/',
+        views.graph_relations, name='graph_relations'),
     
     url(r'^station/(?P<station>[-\w|\W\ ]+)/(?P<family>[-\w|\W\ ]+)/$', views.get_process, name='get_process'),
     url(r'^station/$', views.post_list, name='post_list'),

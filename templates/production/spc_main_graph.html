@@ -98,10 +98,19 @@
                       <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
                         <ul class="dropdown-menu" role="menu" id="oneAnswer">
-                          <li><a id="changeurl" station={{item.station}} parameter={{param.name}} 
+                          <li>
+
+                        <!--   <a id="changeurl" station={{item.station}} parameter={{param.name}} 
                           datefrom={{data.date_from}} dateto={{data.date_to}}
                           href= "{% url 'spc_cpk_station' data.family item.station param.name|to_slash data.mode %}" >Show Cp/Cpk</a>
+                          </li> -->
+
+                             <a id="changeurl" station={{item.station}} parameter={{param.name}} 
+                          datefrom={{data.date_from}} dateto={{data.date_to}}
+                          href= "{% url 'graph_relations' data.family item.station param.name|to_slash data.mode %}" >Show Relations</a>
                           </li>
+
+
 
                           <li><a id="spc_data" href= "{% url 'graph_distribution_by_range' data.family item.station param.name|to_slash data.mode %}" >Show Distribution</a>
                           </li>

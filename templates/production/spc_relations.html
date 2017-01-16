@@ -1,0 +1,199 @@
+{% extends "site_base2.html" %}
+
+{% load prod_lib %}
+
+
+{% block extra_style %}
+
+#eventForm .form-control-feedback {
+    top: 0;
+    right: -15px;
+}
+
+{% endblock %}
+
+
+
+{% block page_content %}
+<!-- page content -->
+         <div class="row">
+        <div class="right_col" role="main">
+          <div class="">
+            <div class="page-title">
+              
+              <div class="col-md-12 col-sm-12 col-xs-12">
+                <div id="head-title" class="col-md-6" class="pull-left">
+                  <h3>Model : {{data.family}}  <small>on {{data.date_from}} to {{data.date_to}}</small></h3>
+                </div>
+                
+                <div class="col-md-6" class="pull-left">
+                </div>
+              </div>
+            </div>
+
+
+
+         
+          <!-- Station Section -->
+          <div class="row">
+            <!--Detail Section -->
+            <div class="col-md-6 col-sm-6 col-xs-6">
+              <div class="dashboard_graph">
+
+                  <div class="row x_title">
+                    <div class="col-md-12">
+                      <h3>{{ data.station}} : {{ data.parameter}}<small></small></h3>
+                    </div>
+                    <div class="col-md-12"></div>
+                  </div>
+                 <!-- Parameter Section -->
+                  <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div id="graph-body" class="x_content">
+                        <!--   Start Content -->
+                        <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family data.station data.parameter|to_slash '7day' %}" >
+                          <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/7day/">
+                        </a>
+
+                        </div>
+                    </div>
+                  </div>
+                  <!-- End Parameter-->
+                  <div class="clearfix"></div>
+                  </div>
+              </div>
+              <!--End Detail Section -->
+
+             <!--Detail Section - Parameter selection -->
+            <div class="col-md-6 col-sm-6 col-xs-6">
+              <div class="dashboard_graph">
+
+                  <div class="row x_title">
+                    <div class="col-md-12">
+                      <h3>Looking at<small></small></h3>
+                    </div>
+                    <div class="col-md-12"></div>
+                  </div>
+                 <!-- Parameter Section -->
+                  <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div id="graph-body" class="x_content">
+                        <!--   Start Content -->
+                        <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family data.station data.parameter|to_slash '7day' %}" >
+                          <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/7day/">
+                        </a>
+
+                        </div>
+                    </div>
+                  </div>
+                  <!-- End Parameter-->
+                  <div class="clearfix"></div>
+                  </div>
+              </div>
+              <!--End Detail Section - Parameter selection -->
+
+            </div>
+            <!-- End Row-->
+
+          </div> 
+
+          <!-- end Station -->
+              </div>
+            </div>
+          </div>
+
+        <!-- /page content -->
+        {% endblock page_content %}
+
+
+
+        {% block java_content %}
+        <script>
+    $(function(){
+
+
+    //Text Box
+      $('#id_start_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+       $('#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                todayBtn: 'linked'
+      });
+       });
+
+
+      $('select[name=opt_family]').on('change', function() {
+              //alert( this.value ); 
+              // $('#yourdropdownid option:selected').text();
+              var selected_family=$(this).find(":selected").val()
+              var url ="{% url 'spc_main_family' '0'   %}".replace('0',selected_family)
+              window.location.href = url ;
+              
+              
+              
+      });
+
+      $('#DateRangeSelect input[type=radio]').change(function() {       
+            // $('body').css('cursor', 'wait');
+            
+            var range = this.value //alert(this.value);
+
+            $('#graph-body img').each(function(){
+                var src_name = $(this).attr('src');          
+                var src_name = src_name.replace("7day/", "");
+                var src_name = src_name.replace("14day/", "");
+                var src_name = src_name.replace("6week/", "");
+                var src_name = src_name.replace("4month/", "");
+                var src_new =src_name +  range + '/'
+                $(this).attr("src", src_new);
+
+                
+                // var href_old = $('#changeurl').attr("href");
+                // var href_old = href_old.replace("7day/", "");
+                // var href_old = href_old.replace("14day/", "");
+                // var href_old = href_old.replace("6week/", "");
+                // var href_old = href_old.replace("4month/", "");
+                // var href_new =href_old +  range + '/'
+                // $('#changeurl').attr("href", href_new);
+            });
+
+            $('#graph-body a').each(function(){
+                var src_name = $(this).attr('href');          
+                var src_name = src_name.replace("7day/", "");
+                var src_name = src_name.replace("14day/", "");
+                var src_name = src_name.replace("6week/", "");
+                var src_name = src_name.replace("4month/", "");
+                var src_new =src_name +  range + '/';
+                $(this).attr('href', src_new);
+            });
+
+            // $('body').css('cursor','auto');
+            // $("div").css('cursor','auto');
+            $('#oneAnswer li a').each(function (i) {
+
+                  // var index = $(this).index();
+                  // var text = $(this).text();
+                  var href_old = $(this).attr('href');
+                var href_old = href_old.replace("7day/", "");
+                var href_old = href_old.replace("14day/", "");
+                var href_old = href_old.replace("6week/", "");
+                var href_old = href_old.replace("4month/", "");
+                var href_new =href_old +  range + '/'
+                $(this).attr('href',href_new);
+                  // alert($(this).attr('href'));
+              });
+            
+
+            $('#head-title h3 small').text( "On last " + range );
+        });
+
+
+
+      
+      </script>
+
+      
+
+        {% endblock java_content %}
