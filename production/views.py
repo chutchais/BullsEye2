@@ -1763,6 +1763,7 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
         "family" : family,
         "station" : station,
         "parameter" :parameter,
+        "date_range" : date_range,
         "date_from_str":start_date,
         "date_to_str":stop_date,
         "date_from":start_date,

@@ -70,17 +70,56 @@
 
                   <div class="row x_title">
                     <div class="col-md-12">
-                      <h3>Looking at<small></small></h3>
+                      <!-- <h3>Looking at<small></small></h3> -->
+                      Looking at : 
+
+                        <select class="selectpicker" data-style="btn-danger"  data-live-search="true" name="opt_param">
+                            <optgroup label="Pic Material">
+                                <option value="111102" > Package (810-0023-10) Lot</option>
+                                <option value="111105" > Shim (810-0020-06) LotCode</option>
+                                <option value="111106" > DC Substrate (810-0022-10) LotCode</option>
+                                <option value="11117" > PIC Bin</option>
+                                <option value="111108" > TIA (485-0013-00) LotCode</option>
+                                <option value="111110" > Driver chip (810-0014-10) LotCode</option>
+                                <option value="10600111" > Driver RF Subs DateCode</option>
+                                <option value="10600222" > Driver RF Subs LotCode</option>
+                                <option value="10600333" > RF Subs Left DateCode</option>
+                                <option value="10600444" > RF Subs Left LotCode</option>
+                                <option value="10600555" > RF Subs Right DateCode</option>
+                                <option value="10600666" > RF Subs Right LotCode</option>
+                                <option value="111122" > ESD diode (325-0028-00) LotCode</option>
+                                <option value="111115" > Resistor (300-0240-00) LotCode</option>
+                                <option value="111120" > EEPROM (470-0011-00) LotCode</option>
+                                <option value="11008" > PIC LotCode</option>
+                                <option value="102001" > H70E epoxy LotCode</option>
+                                <option value="104001" > 84-1 LMI epoxy LotCode</option>
+                                <option value="111116" > Thermistor (308-0000-00) LotCode</option>
+                                <option value="112001" > T6067-3 LotCode</option>
+                                <option value="112002" > T6067-3 Exp date :</option>
+                                <option value="1119" > Base plate LotCode</option>
+                            </optgroup>
+                            <optgroup label="Module Material">
+                              <option value="110001" > PCBA Part Number :</option>
+                              <option value="110002" > PCBA Rev. :</option>
+                              <option value="110004" > PIC 500-0110-10 Rev. :</option>
+                              <option value="101123" > PIC 500-0120-20 Rev. :</option>
+                              <option value="111352" > PIC 1 (M5) Rev. :</option>
+                              <option value="111354" > PIC 2 (M6) Rev. :</option>
+                            </optgroup>
+                          </select>
+ 
+
+
                     </div>
                     <div class="col-md-12"></div>
                   </div>
                  <!-- Parameter Section -->
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <div class="x_panel">
-                        <div id="graph-body" class="x_content">
+                        <div id="graph-relation" class="x_content">
                         <!--   Start Content -->
                         <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family data.station data.parameter|to_slash '7day' %}" >
-                          <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/7day/">
+                          <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/{{data.date_range}}">
                         </a>
 
                         </div>
@@ -111,6 +150,24 @@
         <script>
     $(function(){
 
+      $('select[name=opt_param]').on('change', function() {
+              //alert( this.value ); 
+              // $('#yourdropdownid option:selected').text();
+              var selected_param=$(this).find(":selected").val()
+              var imgscr=$('#graph-body img').attr('src');
+              var newimgscr=imgscr + selected_param +"/";
+              //$('#graph-relation img').attr('src', newimgscr);
+              //var url ="{% url 'spc_main_family' '0'   %}".replace('0',selected_family)
+              //alert(newimgscr );
+              $('#graph-relation img').each(function(){
+                
+                $(this).attr('src', newimgscr);
+                var test =$(this).attr('src');
+                //alert(test );
+            });
+
+                   
+      });
 
     //Text Box
       $('#id_start_date').datepicker({
