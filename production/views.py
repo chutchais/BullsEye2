@@ -1970,10 +1970,10 @@ def graph_boxplot_by_date(request,family,station,
             date_x_data.append(mylist)
     
     elif date_range=='operator':
-        date_labels =pt.distinct('performing__user').values_list('performing__user',flat=True)
+        date_labels =pt.distinct('performing__user__username').values_list('performing__user__username',flat=True)
         date_x_data=[]
-        for user in pt.distinct('performing__user').values_list('performing__user',flat=True):
-            mylist = list(pt.filter(performing__user=user).values_list('value',flat=True))
+        for user in pt.distinct('performing__user__username').values_list('performing__user__username',flat=True):
+            mylist = list(pt.filter(performing__user__username=user).values_list('value',flat=True))
             date_x_data.append(mylist)
 
     else : #Parameter Name
