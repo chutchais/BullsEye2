@@ -182,6 +182,7 @@ class Performing(models.Model):
 	result = models.BooleanField(default=True,db_index=True)
 	dispose_code = models.CharField(max_length=100,db_index=True)
 	user = models.ForeignKey('auth.User',blank=True,null=True)
+	slot = models.CharField(max_length=20,blank=True,null=True,db_index=True)
 
 	def __str__(self):
 		return "%s" % self.sn_wo
@@ -198,11 +199,23 @@ class Parameter(models.Model):
 	activated = models.BooleanField(default=True)
 	critical = models.BooleanField(verbose_name ='Critical parameter?',default=False)
 	ordering = models.IntegerField(default=1)
+	attribute = models.ForeignKey('ParameterAttribute' ,related_name='attribute_list',blank=True,null=True)
 	
 	def __str__(self):
 		return ("%s" % (self.description))
 		# return ("%s : %s" % (self.name,self.description))
 
+class ParameterAttribute(models.Model):
+	name = models.CharField(max_length=50,null=True, blank=True,db_index=True)
+	description = models.CharField(max_length=255, blank=True)
+	temperature  = models.CharField(max_length=50,null=True, blank=True,db_index=True)
+	frequency  = models.CharField(max_length=50,null=True, blank=True,db_index=True)
+	lane = models.CharField(max_length=50,null=True, blank=True,db_index=True)
+	mode  = models.CharField(max_length=50,null=True, blank=True,db_index=True)
+	user = models.ForeignKey('auth.User',blank=True,null=True)
+	created_date = models.DateTimeField(auto_now_add=True)
+	def __str__(self):
+		return ("%s" % (self.name))
 
 class PerformingDetails(models.Model):
 	S = 'String'

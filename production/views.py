@@ -1976,6 +1976,65 @@ def graph_boxplot_by_date(request,family,station,
             mylist = list(pt.filter(performing__user__username=user).values_list('value',flat=True))
             date_x_data.append(mylist)
 
+    elif date_range=='temperature':
+        # Same Parameter ,Same Frequency and Same station
+        cuttedParam=parameter.split('(')[0]
+        currTemp= pt[0].parameter.attribute.temperature
+        currFreq= pt[0].parameter.attribute.frequency
+        
+        param_req=Parameter.objects.filter(name__contains=cuttedParam,attribute__frequency=currFreq,group=station)
+        # print (param_req)
+        date_labels =param_req.distinct('attribute__temperature').values_list('attribute__temperature',flat=True)
+        # print (date_labels)
+        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
+        # print(station)
+        snlist_temp = PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+                    performing__station__station = station,parameter__in =param_req )
+        # print (snlist_temp.count())
+        date_x_data=[]
+        for p in date_labels:
+            # print (p)
+            mylist = list(snlist_temp.filter(parameter__attribute__temperature=p).values_list('value',flat=True))
+            date_x_data.append(mylist)
+
+        param_desc= '%s (%s)' % (cuttedParam,currFreq)
+
+    elif date_range=='frequency':
+        # Same Parameter ,Same Frequency and Same station
+        cuttedParam=parameter.split('(')[0] 
+        filterParam = cuttedParam + '('
+        currTemp= pt[0].parameter.attribute.temperature
+        currFreq= pt[0].parameter.attribute.frequency
+        print ('%s %s %s' % (filterParam,currTemp,currFreq))
+        
+        param_req=Parameter.objects.filter(name__contains=filterParam,attribute__temperature=currTemp,group=station)
+        date_labels =param_req.distinct('attribute__frequency').values_list('attribute__frequency',flat=True)
+        # print (param_req)
+        # print (date_labels)
+        # return drawEmptyGraph(date_range,'Parameter %s does not exist in system' % date_range)
+        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
+        snlist_temp = PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+                    performing__station__station = station,parameter__in =param_req )
+        date_x_data=[]
+        new_date_labels=[]
+        for p in date_labels:
+            # print (p)
+            mylist = list(snlist_temp.filter(parameter__attribute__frequency=p).values_list('value',flat=True))
+            date_x_data.append(mylist)
+            new_date_labels.append(p.replace('THz',''))
+
+        date_labels=new_date_labels
+
+        param_desc= '%s (%s)' % (cuttedParam,currTemp)
+
+
+        # return drawEmptyGraph(date_range,'Parameter %s  %s' % (cuttedParam,currTemp))
+
+        # date_x_data=[]
+        # for user in pt.distinct('performing__user__username').values_list('performing__user__username',flat=True):
+        #     mylist = list(pt.filter(performing__user__username=user).values_list('value',flat=True))
+        #     date_x_data.append(mylist)
+
     else : #Parameter Name
         #1)check Parameter exist in system
         param_req=Parameter.objects.filter(name=date_range)

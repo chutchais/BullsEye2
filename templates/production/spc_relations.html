@@ -24,7 +24,7 @@
               
               <div class="col-md-12 col-sm-12 col-xs-12">
                   <div id="head-title" class="col-md-6" class="pull-left">
-                    <h3>Model : {{data.family}}  <small>on {{data.date_from}} to {{data.date_to}}</small></h3>
+                    {{data.family}} : {{ data.station}} <small>on {{data.date_from}} to {{data.date_to}}</small>
                   </div>
                   <div class="col-md-6" class="pull-left"></div>
               </div>
@@ -41,7 +41,7 @@
                 <div class="dashboard_graph">
                     <div class="row x_title">
                       <div class="col-md-12">
-                        <h3>{{ data.station}} : {{ data.parameter}}<small></small></h3>
+                        <small>{{ data.parameter}}<small>
                       </div>
                       <div class="col-md-12"></div>
                     </div>
@@ -71,13 +71,15 @@
                     <div class="col-md-12">
                       <!-- <h3>Looking at<small></small></h3> -->
                       
-                        <p class="lead">Backward Distribution by 
+                        <p class="lead"><small>Group by <small>
                         <select class="selectpicker" data-style="btn-danger"  data-live-search="true" name="opt_param">
                             <optgroup label="General">
-                              <option value="" > Date :</option>
-                              <option value="tester" > Tester/Equipment :</option>
-                              <option value="operator" > Operator :</option>
-                              <option value="part" > Part number :</option>
+                              <option value="" >Date</option>
+                              <option value="tester" >Tester/Equipment</option>
+                              <option value="operator" >Operator</option>
+                              <option value="part" >Part number</option>
+                              <option value="temperature" >Temperature</option>
+                              <option value="frequency" >Frequency</option>
                             </optgroup>
                             <optgroup label="Pic Material">
                                 <option value="111102" > Package (810-0023-10) Lot</option>
