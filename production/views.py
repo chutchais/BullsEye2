@@ -1776,6 +1776,32 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
     return render(request, 'production/spc_relations.html',context)
     # return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
 
+def graph_boxplot_by_range_group_value(request,family,station,parameter,date_range ='7day',groupby='date',value=''):
+    import datetime
+    from datetime import date
+
+    if date_range=='6week':
+        default_start = date.today()  - datetime.timedelta(days=42)
+        group_by='week'
+    elif date_range=='14day':
+        default_start = date.today()  - datetime.timedelta(days=14)
+        group_by='date'
+    elif date_range=='4month':
+        default_start = date.today()  - datetime.timedelta(days=120)
+        group_by='month'
+    else: #7days
+        default_start = date.today()  - datetime.timedelta(days=7)
+        group_by='date'
+
+    date_from= datetime.datetime.strftime(default_start,"%Y-%m-%d")
+    date_to = datetime.datetime.strftime(date.today(),"%Y-%m-%d")
+
+    if groupby != 'date':
+        group_by = groupby
+
+    print ('Range ,Group and Value from %s to %s' % (date_from,date_to))
+
+    return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
 
 def graph_boxplot_by_range_group(request,family,station,parameter,date_range ='7day',groupby='date'):
     import datetime
@@ -1829,7 +1855,7 @@ def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
     return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
 
 def graph_boxplot_by_date(request,family,station,
-                          date_from,date_to,parameter,date_range='date'):
+                          date_from,date_to,parameter,date_range='date',value=None):
     # import numpy as np
     import matplotlib.mlab as mlab
     import matplotlib.pyplot as plt
@@ -1956,12 +1982,17 @@ def graph_boxplot_by_date(request,family,station,
             date_x_data.append(mylist)
 
     elif date_range=='tester':
-        date_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
-        date_x_data=[]
-        for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
-            mylist = list(pt.filter(performing__tester=tester).values_list('value',flat=True))
-            # mylist.remove(max(mylist))
-            date_x_data.append(mylist)
+        
+        if value == None :
+            date_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
+            date_x_data=[]
+            for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
+                mylist = list(pt.filter(performing__tester=tester).values_list('value',flat=True))
+                # mylist.remove(max(mylist))
+                date_x_data.append(mylist)
+        else: #By Tester Slot -- attribute_code=5111
+            date_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
+
     elif date_range=='part':
         date_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
         date_x_data=[]
@@ -1979,22 +2010,30 @@ def graph_boxplot_by_date(request,family,station,
     elif date_range=='temperature':
         # Same Parameter ,Same Frequency and Same station
         cuttedParam=parameter.split('(')[0]
+        filterParam = cuttedParam + '('
         currTemp= pt[0].parameter.attribute.temperature
         currFreq= pt[0].parameter.attribute.frequency
         
-        param_req=Parameter.objects.filter(name__contains=cuttedParam,attribute__frequency=currFreq,group=station)
-        # print (param_req)
-        date_labels =param_req.distinct('attribute__temperature').values_list('attribute__temperature',flat=True)
-        # print (date_labels)
+        # param_req=Parameter.objects.filter(name__contains=cuttedParam,attribute__frequency=currFreq,group=station)
+        # # print (param_req)
+        # date_labels =param_req.distinct('attribute__temperature').values_list('attribute__temperature',flat=True)
+        # # print (date_labels)
+        # snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
+
         snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
-        # print(station)
-        snlist_temp = PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
-                    performing__station__station = station,parameter__in =param_req )
-        # print (snlist_temp.count())
+        param_req = PerformingDetails.objects.filter(
+            performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+            performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+            parameter__name__contains=filterParam,
+            performing__sn_wo__in=snlist,
+            parameter__attribute__frequency=currFreq,
+            performing__station__station=station).exclude(value = None)
+        date_labels =param_req.distinct('parameter__attribute__temperature').values_list('parameter__attribute__temperature',flat=True)
+
         date_x_data=[]
         for p in date_labels:
             # print (p)
-            mylist = list(snlist_temp.filter(parameter__attribute__temperature=p).values_list('value',flat=True))
+            mylist = list(param_req.filter(parameter__attribute__temperature=p).values_list('value',flat=True))
             date_x_data.append(mylist)
 
         param_desc= '%s (%s)' % (cuttedParam,currFreq)
@@ -2007,25 +2046,38 @@ def graph_boxplot_by_date(request,family,station,
         currFreq= pt[0].parameter.attribute.frequency
         print ('%s %s %s' % (filterParam,currTemp,currFreq))
         
-        param_req=Parameter.objects.filter(name__contains=filterParam,attribute__temperature=currTemp,group=station)
-        date_labels =param_req.distinct('attribute__frequency').values_list('attribute__frequency',flat=True)
+        # param_req=Parameter.objects.filter(name__contains=filterParam,attribute__temperature=currTemp,group=station)
+        
+        # date_labels =param_req.distinct('attribute__frequency').values_list('attribute__frequency',flat=True)
+        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
+        param_req = PerformingDetails.objects.filter(
+            performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+            performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+            parameter__name__contains=filterParam,
+            performing__sn_wo__in=snlist,
+            parameter__attribute__temperature=currTemp,
+            performing__station__station=station).exclude(value = None)
+        date_labels =param_req.distinct('parameter__attribute__frequency').values_list('parameter__attribute__frequency',flat=True)
+
         # print (param_req)
         # print (date_labels)
         # return drawEmptyGraph(date_range,'Parameter %s does not exist in system' % date_range)
-        snlist = pt.values_list('performing__sn_wo')#Sn list in Main operation
-        snlist_temp = PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
-                    performing__station__station = station,parameter__in =param_req )
+        
+        # snlist_temp = PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+        #             performing__station__station = station,parameter__in =param_req )
         date_x_data=[]
         new_date_labels=[]
+        unitName='THz'
         for p in date_labels:
             # print (p)
-            mylist = list(snlist_temp.filter(parameter__attribute__frequency=p).values_list('value',flat=True))
+            mylist = list(param_req.filter(parameter__attribute__frequency=p).values_list('value',flat=True))
             date_x_data.append(mylist)
-            new_date_labels.append(p.replace('THz',''))
+            new_date_labels.append(p.replace(unitName,''))
 
-        date_labels=new_date_labels
+        date_labels=new_date_labels #Value with
 
         param_desc= '%s (%s)' % (cuttedParam,currTemp)
+        date_range = '%s (%s)' % (date_range,unitName)
 
 
         # return drawEmptyGraph(date_range,'Parameter %s  %s' % (cuttedParam,currTemp))
@@ -2049,21 +2101,26 @@ def graph_boxplot_by_date(request,family,station,
                         parameter__name=date_range) #list of target Parameter
        
         if pt_new.count()>0 : #Parameter in same Level
+            print ('Start on query data on same Level of %s' % date_range)
+            #get Station of parameter
+            param_station=pt_new.first().performing.station
             #get parameter of all sn 
             pt_new=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
-                        parameter__name=date_range) #list of target Parameter
+                        parameter__name=date_range,performing__station=param_station) #list of target Parameter
 
             date_labels=pt_new.distinct('value_str').values_list('value_str',flat=True)
             date_x_data=[]
+            print ('Starting loop %s' % date_labels)
             for p in date_labels:
-                
+                print ('Querying loop %s' % p)
                 snlist_parameter= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
-                    parameter__name=date_range,value_str=p).values_list('performing__sn_wo')
+                    parameter__name=date_range,performing__station=param_station,value_str=p).values_list('performing__sn_wo')
 
                 mylist = list(pt.filter(performing__sn_wo__in=snlist_parameter).values_list('value',flat=True))
                 date_x_data.append(mylist)
             if pt_new.count()>0 :
                 date_range=pt_new[0].parameter.description
+            print ('Finished')
         else: #either parameter not existing or in another Level.
             #1)get setting value of Product
             print ('Start on query data on another Level')
@@ -2077,6 +2134,13 @@ def graph_boxplot_by_date(request,family,station,
                 return drawEmptyGraph(date_range,'Not found PCBA Serial number configuration of %s' % family )
             #2)Get list for attribute of PIC Serial number
             param_list=[att_family[k] for k in att_family]
+
+            # qs_parm=Parameter.objects.filter(name__in=param_list)
+            # if qs_parm.count()>0:
+            #     qs_pic= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
+            #         parameter__name__in = param_list,performing__station=qs_parm)
+
+
             #3)Get list of PIC serial number from CFP level
             qs_pic= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
                     parameter__name__in = param_list)
@@ -2132,14 +2196,7 @@ def graph_boxplot_by_date(request,family,station,
             if qs_pic_data.count()>0 :
                 date_range= qs_pic_data[0].parameter.description + '  of ' + qs_pic_data[0].performing.sn_wo.workorder.product.family.name
 
-            # pt_pcb=PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
-            #             performing__station__station__in =newStationList,
-            #             parameter__name__in=param_list) #list of target Parameter
-            # pcbsnlist = pt_pcb.values_list('value')#Sn list in Main operation
-            # #pcbsnlist+date_range
 
-            # print (('%s  %s' ) % (assyStation,param_list))
-            # return drawEmptyGraph(len(date_labels))
 
 
 
@@ -2163,13 +2220,10 @@ def graph_boxplot_by_date(request,family,station,
     
     #ax.set_xticklabels( date_labels, rotation=0,ha='center')
     # ax.set_xticklabels(['%s\n$n$=%d'%(l, len(x)) for l, x in zip(date_labels,date_x_data)])
-    ax.set_xticklabels(['%s\n $%d$'%(l, len(x)) for l, x in zip(date_labels,date_x_data)])
-    
-
-    # ax.set_title('By %s' % date_range)
-
-    zed = [tick.label.set_fontsize(18) for tick in ax.yaxis.get_major_ticks()]
-    zed = [tick.label.set_fontsize(18) for tick in ax.xaxis.get_major_ticks()]
+    tickFontSize=14
+    ax.set_xticklabels(['%s\n $%d$'%(l, len(x)) for l, x in zip(date_labels,date_x_data)],fontsize=tickFontSize)
+    zed = [tick.label.set_fontsize(tickFontSize) for tick in ax.yaxis.get_major_ticks()]
+    zed = [tick.label.set_fontsize(tickFontSize) for tick in ax.xaxis.get_major_ticks()]
 
     if not means == None :
         ax.axhline(y=means,color='g' ,ls='dashed')

@@ -23,8 +23,10 @@ urlpatterns = [
     url(r'^graph/histogram/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.graph_histogram_by_range, name='graph_histogram_by_range'),
 
-    url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
-        views.graph_boxplot_by_date, name='graph_boxplot_by_date'),
+    # url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<date_from>[-\w|\W\ ]+)/(?P<date_to>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
+    #     views.graph_boxplot_by_date, name='graph_boxplot_by_date'),
+    url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/(?P<groupby>[-\w|\W\ ]+)/(?P<value>[-\w|\W\ ]+)/', 
+        views.graph_boxplot_by_range_group_value, name='graph_boxplot_by_range_group_value'),
     url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/(?P<groupby>[-\w|\W\ ]+)/', 
         views.graph_boxplot_by_range_group, name='graph_boxplot_by_range_group'),
     url(r'^graph/boxplot/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
