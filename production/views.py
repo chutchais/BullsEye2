@@ -2127,26 +2127,29 @@ def graph_boxplot_by_date(request,family,station,
             from django.conf import settings
             param_setting = getattr(settings, "PCBA_SN", None)
             if param_setting == None:
-                return drawEmptyGraph(date_range,'No PCBA Serial number attribute configuration')
+                return drawEmptyGraph(date_range,'No PIC Serial number attribute configuration')
 
             att_family =param_setting.get(family)
             if att_family == '':
-                return drawEmptyGraph(date_range,'Not found PCBA Serial number configuration of %s' % family )
+                return drawEmptyGraph(date_range,'Not found PIC Serial number configuration of %s' % family )
             #2)Get list for attribute of PIC Serial number
-            param_list=[att_family[k] for k in att_family]
-
+            # param_list=[att_family[k] for k in att_family]
+            new_param_list=[]
+            assy_operation=att_family.get('OPERATION')
+            param_list=[new_param_list.append(att_family[k]) if k != 'OPERATION' else '' for k in att_family]
             # qs_parm=Parameter.objects.filter(name__in=param_list)
             # if qs_parm.count()>0:
             #     qs_pic= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
             #         parameter__name__in = param_list,performing__station=qs_parm)
-
+            print ('%s -- %s' % (assy_operation,new_param_list))
 
             #3)Get list of PIC serial number from CFP level
             qs_pic= PerformingDetails.objects.filter(performing__sn_wo__in =snlist,
-                    parameter__name__in = param_list)
+                    parameter__name__in = new_param_list, performing__station__station=assy_operation)
+            print ('Start on query data on another Level')
 
             if qs_pic.count()==0:
-                return drawEmptyGraph(date_range,'Not found data of parameter %s' % param_list)
+                return drawEmptyGraph(date_range,'Not found data of parameter %s' % new_param_list)
 
             
 
@@ -2174,9 +2177,9 @@ def graph_boxplot_by_date(request,family,station,
             #     parameter__name=parameter,
             #     performing__sn_wo__workorder__product__family__name=family).exclude(value = None)
             pt_assy = PerformingDetails.objects.filter(
-                        performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
                         performing__station = assyStation,
                         performing__sn_wo__in = snlist).exclude(value = None)
+            
             print ('Starting loop %s' % date_labels)
             for p in date_labels:
                 print (p)

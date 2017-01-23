@@ -161,16 +161,20 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Configuration of PCB SN and Operation 
 PCBA_SN = {
     'CFP':{
-        'ATTR_CODE1':'110003'
+        'ATTR_CODE1':'110003',
+        'OPERATION':'1100'
     },
     'CFP GLACIER' :{
-        'ATTR_CODE1':'101122'
+        'ATTR_CODE1':'101122',
+        'OPERATION':'1100'
     },
     'AC400' :{
         'ATTR_CODE1':'111351',
-        'ATTR_CODE2':'111354'
+        'ATTR_CODE2':'111354',
+        'OPERATION':'120'
     },
 }
 
