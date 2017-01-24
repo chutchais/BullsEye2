@@ -1758,10 +1758,14 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
 
     print ('Range and Group from %s to %s' % (start_date,stop_date))
 
+    st=Station.objects.get(station=station)
+    # print (station)
+
     data={
-        "title":"Relation Paremeter Data",
+        "title":"Group by Report",
         "family" : family,
         "station" : station,
+        "station_qs":st,
         "parameter" :parameter,
         "date_range" : date_range,
         "date_from_str":start_date,
@@ -1769,7 +1773,7 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
         "date_from":start_date,
         "date_to":stop_date,
         }
-    print (station)
+    # print (station)
     context ={
         "data": data,
         }
@@ -1889,6 +1893,9 @@ def graph_boxplot_by_date(request,family,station,
         parameter__name=parameter,
         performing__sn_wo__workorder__product__family__name=family,
         performing__station__station=station).exclude(value = None)
+
+    spec_min=means = pt.aggregate(min=Min('limit_min')).get('min') #pt[0].limit_min
+    spec_max = pt.aggregate(max=Max('limit_max')).get('max')
 
     adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
     if pt.count()>0:
@@ -2058,6 +2065,7 @@ def graph_boxplot_by_date(request,family,station,
             parameter__attribute__temperature=currTemp,
             performing__station__station=station).exclude(value = None)
         date_labels =param_req.distinct('parameter__attribute__frequency').values_list('parameter__attribute__frequency',flat=True)
+
 
         # print (param_req)
         # print (date_labels)
@@ -2236,19 +2244,38 @@ def graph_boxplot_by_date(request,family,station,
     ax.set_title('%s ($n$=%d)' % (param_desc,total_sample),fontsize=16)
     ax.set_xlabel('%s' % date_range)
 
+    # show spec limit
+    ax.text(1, 0.98, ('Spec limit - min : %s max : %s')% (spec_min,spec_max),
+        verticalalignment='top', horizontalalignment='right',
+        transform=ax.transAxes,
+        color='green', fontsize=12)
+
     #Put Text on Graph
     import numpy as np
+    xarry=[]
+    yarry=[]
     ymin, ymax = ax.get_ylim()
     for line,sample in zip(bp_dict['medians'],date_x_data):
         # get position data for median line
         x, y = line.get_xydata()[1] # top of median line
+        
         # overlay median value
-        if not np.isnan(y):
-            ax.text(x, y, '%.2f' % y,
-            verticalalignment='bottom',ha='right',fontsize=12) # draw above, centered
+        # if not np.isnan(y):
+        #     ax.text(x, y, '%.2f' % y,
+        #     verticalalignment='bottom',ha='right',fontsize=12) # draw above, centered
 
             # ax.text(x, ymax-ymax*0.05, '$n$=%d' % len(sample),
             # verticalalignment='bottom',ha='right',fontsize=14) # draw above, centered
+
+    for line in bp_dict['means']:
+        x, y = line.get_xydata()[0]
+        xarry.append(x)
+        yarry.append(y)
+        if not np.isnan(y):
+            ax.text(x, y, '%.2f' % y,
+            verticalalignment='bottom',ha='center',fontsize=12) # draw above, centered
+    # Plot Connect Mean line
+    ax.plot(xarry, yarry, 'b-',color='green')
             
                 
     #0 # bottom of left line
@@ -2266,6 +2293,8 @@ def graph_boxplot_by_date(request,family,station,
             ax.text(x,y, '%.2f' % y,
                  horizontalalignment='left', # centered
                      verticalalignment='bottom',fontsize=8)      # below
+
+
     # fig.tight_layout()
     fig.set_tight_layout(True)
     canvas=FigureCanvas(fig )
