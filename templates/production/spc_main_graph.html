@@ -113,7 +113,7 @@
 
 
 
-                          <li><a id="spc_data" href= "{% url 'graph_distribution_by_range' data.family item.station param.name|to_slash data.mode %}" >Show Distribution</a>
+                          <li><a id="spc_data" href= "{% url 'graph_histogram_by_range' data.family item.station param.name|to_slash data.mode %}" >Show Distribution</a>
                           </li>
 
                         </ul>
@@ -125,7 +125,8 @@
                   </div>
                   <div id="graph-body" class="x_content">
                   <!--   Start Content -->
-                  <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family item.station param.name|to_slash data.mode %}" >
+                  <!--  graph_boxplot_by_range-->
+                  <a id="changeimgurl" href= "{% url 'graph_relations' data.family item.station param.name|to_slash data.mode %}" >
                     <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{item.station}}/{{param.name|to_slash}}/7day/">
                   </a>
                   <!-- SPC details -->

@@ -1316,19 +1316,22 @@ def graph_histogram(request,family,station,
     # F = gcf()
     # Size = F.get_size_inches()
     # fig = plt.Figure(figsize=(15,8))
-    fig = plt.Figure(figsize=(15,8))
+    fig = plt.Figure(figsize=(8,6), dpi=80)
+    adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
+    fig.subplots_adjust(**adjustprops)
     fig.patch.set_facecolor('white')
 
     ax = fig.add_subplot(111) #211 ,111
    
     # example data
-    mu = means #100  # mean of distribution
+    mu = means #100  # mean of distributiongraph_distribute
+
     sigma = stddev #15  # standard deviation of distribution
     #x = mu + sigma * np.random.randn(10000)
     import math
     #num_bins = 20 if pt.count()>100 else pt.count()
-    num_bins =math.ceil(((max_value-min_value)/stddev))*2
-
+    # num_bins =math.ceil(((max_value-min_value)/stddev))*2
+    num_bins=50
     # the histogram of the data
     
     #print ('Min : %s , Max: %s  , def: %s , num : %s' % (min_value,max_value,max_value-min_value,num_bins))
@@ -1355,21 +1358,36 @@ def graph_histogram(request,family,station,
     Cpu = (limit_max-means)/(3*sigma)
     Cpk = Cpl if Cpl < Cpu else Cpl
     ax.set_ylabel('Probability')
-    ax.set_title(r'Histogram of %s : $\mu = %0.2f $, $\sigma=%0.2f$' % (parameter,means,stddev))
+    ax.set_title(r'%s ($n$=%s)' % (parameter,pt.count()),fontsize=16)
     #ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
+    ax.text(0, 0.98, ('$\mu = %0.2f $, $\sigma=%0.2f$')% (means,stddev),
+        verticalalignment='top', horizontalalignment='left',
+        transform=ax.transAxes,
+        color='green', fontsize=12)
+
+
+    # show spec limit
+    spec_min= pt.aggregate(min=Min('limit_min')).get('min') #pt[0].limit_min
+    spec_max = pt.aggregate(max=Max('limit_max')).get('max')
+    ax.text(1, 0.98, ('Limit  min : %s ,max : %s')% (spec_min,spec_max),
+        verticalalignment='top', horizontalalignment='right',
+        transform=ax.transAxes,
+        color='green', fontsize=12)
+
 
     # draw a default vline at x=1 that spans the yrange
-    l = ax.axvline(x=limit_min)
-    ax.text(limit_min,max(y),('LSL=%s' % limit_min), ha='left',
-            verticalalignment='bottom',color='black', wrap=True,
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+    # l = ax.axvline(x=(means-(3*stddev)))
+    # ax.text(limit_min,max(y),('LSL=%s' % limit_min), ha='left',
+    #         verticalalignment='bottom',color='black', wrap=True,
+    #         bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
 
-    l = ax.axvline(x=limit_max)
-    ax.text(limit_max,max(y),('USL=%s' % limit_max), ha='left',
-            verticalalignment='bottom',color='black', wrap=True,
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+    # l = ax.axvline(x=(means+(3*stddev)))
+    # ax.text(limit_max,max(y),('USL=%s' % limit_max), ha='left',
+    #         verticalalignment='bottom',color='black', wrap=True,
+    #         bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
 
-    ax.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
+    # ax.set_xlim([min_value-(sigma),max_value+(sigma)])
+    ax.set_xlim([means-(6*sigma),means+(6*sigma)])
 
     #fig.set_size_inches(13,8, forward=True)
     fig.tight_layout()
@@ -1480,8 +1498,8 @@ def graph_distribution(request,family,station,
     #fig.suptitle('bold figure suptitle', fontsize=14, fontweight='bold')
 
 
-    ax = fig.add_subplot(321) #211 ,111
-    ay = fig.add_subplot(322)
+    ax = fig.add_subplot(111) #211 ,111 ,321
+    # ay = fig.add_subplot(322)
 
     
     # example data
@@ -1491,12 +1509,13 @@ def graph_distribution(request,family,station,
     import math
     #num_bins = 20 if pt.count()>100 else pt.count()
     num_bins =math.ceil(((max_value-min_value)/stddev))*2
-
+    print (num_bins)
     # the histogram of the data
     
 
     #print ('Min : %s , Max: %s  , def: %s , num : %s' % (min_value,max_value,max_value-min_value,num_bins))
-    n, bins, patches = ax.hist(x, num_bins, normed=1, facecolor='green', alpha=0.7)
+    num_bins=50
+    n, bins, patches = ax.hist(x, num_bins, normed=1, facecolor='green', alpha=0.75)
     #binwidth=1.0
     #n, bins, patches = ax.hist(x, np.arange(min(x), max(x) + binwidth, binwidth), normed=1, facecolor='green', alpha=0.7)
     #print (bins)
@@ -1506,148 +1525,79 @@ def graph_distribution(request,family,station,
     # print (bins)
 
     y = mlab.normpdf(bins, mu, sigma)
+    ax.plot(bins, y, 'r--',linewidth=1)
 
-    #ax.plot(x,cl,linestyle='-',color='black', linewidth=2)
-
-    #ax.set_xlim(limit_min,limit_max)
-
-    ax.plot(bins, y, 'r--')
-    #ax.set_xlabel('%s on %s' % (parameter,tester))
-    #Cp/Cpk
     Cp = (limit_max-limit_min)/(6*sigma)
     Cpl = (means-limit_min)/(3*sigma)
     Cpu = (limit_max-means)/(3*sigma)
     Cpk = Cpl if Cpl < Cpu else Cpl
     ax.set_ylabel('Probability')
     ax.set_title(r'Histogram of %s : $\mu = %0.2f $, $\sigma=%0.2f$' % (parameter,means,stddev))
-    #ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
 
-    #Line for 
-    # l = ax.axvline(x=means+(3*sigma))
-    # l = ax.axvline(x=means-(3*sigma))
-    # l = ax.axvline(x=means)
-    # Tweak spacing to prevent clipping of ylabel
-    #plt.subplots_adjust(left=0.15)
-    #ax.set_subplots_adjust(left=0.15)
-    #fig.set_size_inches(13,8, forward=True)
+    # l = ax.axvline(x=limit_min)
+    # ax.text(limit_min,max(y),('LSL=%s' % limit_min), ha='left',
+    #         verticalalignment='bottom',color='black', wrap=True,
+    #         bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
 
-    #Line limit min/max
-    # draw a default vline at x=1 that spans the yrange
-    l = ax.axvline(x=limit_min)
-    ax.text(limit_min,max(y),('LSL=%s' % limit_min), ha='left',
-            verticalalignment='bottom',color='black', wrap=True,
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+    # l = ax.axvline(x=limit_max)
+    # ax.text(limit_max,max(y),('USL=%s' % limit_max), ha='left',
+    #         verticalalignment='bottom',color='black', wrap=True,
+    #         bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
 
-    l = ax.axvline(x=limit_max)
-    ax.text(limit_max,max(y),('USL=%s' % limit_max), ha='left',
-            verticalalignment='bottom',color='black', wrap=True,
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+    # ax.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
+    ax.set_xlim([min_value-sigma,max_value+sigma])
 
-    ax.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
-
-    #Overall Box Plot
-    #box_plot(ay,x,means,'Overall')
 
 
 
     
-    ay.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
+    # ay.set_xlim([limit_min-(3*sigma),limit_max+(3*sigma)])
     
-    #Box Plot by Tester
-    tester_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
-    user_labels = pt.distinct('performing__user').values_list('performing__user',flat=True)
-    product_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
-
-    tester_x_data=[]
-    for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
-        mylist = list(pt.filter(performing__tester=tester).values_list('value',flat=True))
-        mylist.remove(max(mylist))
-        tester_x_data.append(mylist)
-
-    user_x_data=[]
-    for user in pt.distinct('performing__user').values_list('performing__user',flat=True):
-        mylist = list(pt.filter(performing__user=user).values_list('value',flat=True))
-        mylist.remove(max(mylist))
-        user_x_data.append(mylist)
-
-    product_x_data=[]
-    for product in pt.distinct('performing__sn_wo__workorder__product').values_list('performing__sn_wo__workorder__product',flat=True):
-        mylist = list(pt.filter(performing__sn_wo__workorder__product=product).values_list('value',flat=True))
-        mylist.remove(max(mylist))
-        product_x_data.append(mylist)
-
-    import numpy as np
-    az = fig.add_subplot(323) #211 ,111
-    az_dict=az.boxplot(tester_x_data,labels=tester_labels,showmeans=True)#rs
-    az.set_xticklabels( tester_labels, rotation=0,ha='center')
-    az.axhline(y=means,color='g' ,ls='dashed')
-    az.set_title('By Tester')
-
-        #Put Text on Graph
-
-    # for line in az_dict['medians']:
-    #     # get position data for median line
-    #     x, y = line.get_xydata()[1] # top of median line
-    #     # overlay median value
-    #     if not np.isnan(y):
-    #         az.text(x, y, '%.2f' % y,
-    #         verticalalignment='bottom',ha='right',fontsize=14) # draw above, centered
-
-    #ax.set_title(r'Parameter : %s' % (parameter))
-    #az.set_xlabel('by Tester')
+    # ak = fig.add_subplot(325) #211 ,111
+    # ak.boxplot(user_x_data,labels=user_labels,showmeans=True)#rs
+    # ak.set_xticklabels( user_labels, rotation=0,ha='center')
+    # ak.axhline(y=means,color='g' ,ls='dashed')
+    # ak.set_title('by Operator')
 
 
-    ak = fig.add_subplot(325) #211 ,111
-    ak.boxplot(user_x_data,labels=user_labels,showmeans=True)#rs
-    ak.set_xticklabels( user_labels, rotation=0,ha='center')
-    #ax.set_title(r'Parameter : %s' % (parameter))
-    ak.axhline(y=means,color='g' ,ls='dashed')
-    ak.set_title('by Operator')
-
-
-    al = fig.add_subplot(324) #211 ,111
-    al.boxplot(product_x_data,labels=product_labels,showmeans=True)#rs
-    al.set_xticklabels( product_labels, rotation=0,ha='center')
-    #ax.set_title(r'Parameter : %s' % (parameter))
-    al.axhline(y=means,color='g' ,ls='dashed')
-    al.set_title('by Product')
+    # al = fig.add_subplot(324) #211 ,111
+    # al.boxplot(product_x_data,labels=product_labels,showmeans=True)#rs
+    # al.set_xticklabels( product_labels, rotation=0,ha='center')
+    # al.axhline(y=means,color='g' ,ls='dashed')
+    # al.set_title('by Product')
 
 
 
-    from matplotlib.dates import DateFormatter
-    import matplotlib.dates as dates
-    plt.gcf().autofmt_xdate()
+    # from matplotlib.dates import DateFormatter
+    # import matplotlib.dates as dates
+    # plt.gcf().autofmt_xdate()
 
-    ab = plt.gca()
-    ab = fig.add_subplot(322)
-    #a = np.linspace(1, x.count(), x.count(), endpoint=False)
-    a= pt.values_list('performing__started_date',flat=True)
-    ab.scatter(a, x)
-    ab.set_ylim([limit_min,limit_max])
-    ab.set_xlim([date_from,date_to])
-    # ab.set_xtick( range(2004,2017,3),[str(i) for i in range(2004,2017,3)])
-    #ab.set_xticklabels( a,rotation=40,ha='right')
+    # ab = plt.gca()
+    # ab = fig.add_subplot(322)
+    # #a = np.linspace(1, x.count(), x.count(), endpoint=False)
+    # a= pt.values_list('performing__started_date',flat=True)
+    # ab.scatter(a, x)
+    # ab.set_ylim([limit_min,limit_max])
+    # ab.set_xlim([date_from,date_to])
+
 
     
-    xab = ab.get_xaxis()
+    # xab = ab.get_xaxis()
 
-    if (date_to-date_from).days >60:
-        xab.set_major_locator(dates.MonthLocator())
-        xab.set_major_formatter(dates.DateFormatter('%b'))
-        xab.set_minor_locator(dates.DayLocator(bymonthday=range(1,32)))
-    else:
-        xab.set_major_locator(dates.DayLocator())
-        xab.set_major_formatter(dates.DateFormatter('%d'))
-        xab.set_minor_locator(dates.HourLocator(byhour=range(0,24,3)))
-        # xab.set_minor_formatter(dates.DateFormatter('%H'))
-        #%Y-%m-%d
+    # if (date_to-date_from).days >60:
+    #     xab.set_major_locator(dates.MonthLocator())
+    #     xab.set_major_formatter(dates.DateFormatter('%b'))
+    #     xab.set_minor_locator(dates.DayLocator(bymonthday=range(1,32)))
+    # else:
+    #     xab.set_major_locator(dates.DayLocator())
+    #     xab.set_major_formatter(dates.DateFormatter('%d'))
+    #     xab.set_minor_locator(dates.HourLocator(byhour=range(0,24,3)))
 
-    xab.set_tick_params(which='major', pad=15,direction=0)
-    # ab.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
+    # xab.set_tick_params(which='major', pad=15,direction=0)
 
-    ab.axhline(y=means,color='g' ,ls='dashed')
-    ab.set_title('Scatter Diagram')
-    plt.setp( xab.get_majorticklabels(), rotation=0, horizontalalignment='center' )
+    # ab.axhline(y=means,color='g' ,ls='dashed')
+    # ab.set_title('Scatter Diagram')
+    # plt.setp( xab.get_majorticklabels(), rotation=0, horizontalalignment='center' )
 
 
 
@@ -1894,7 +1844,7 @@ def graph_boxplot_by_date(request,family,station,
         performing__sn_wo__workorder__product__family__name=family,
         performing__station__station=station).exclude(value = None)
 
-    spec_min=means = pt.aggregate(min=Min('limit_min')).get('min') #pt[0].limit_min
+    spec_min= pt.aggregate(min=Min('limit_min')).get('min') #pt[0].limit_min
     spec_max = pt.aggregate(max=Max('limit_max')).get('max')
 
     adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
