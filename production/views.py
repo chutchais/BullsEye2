@@ -681,7 +681,7 @@ def spc_main(request):
     }
     return render(request, 'production/spc_main_graph.html',context)
 
-def spc_main_graph(request,family=''):
+def spc_main_graph(request,family='',station=None):
     form = ReportFiltersForm(request.POST or None)
     import datetime
     qmode ='7day'
@@ -718,8 +718,15 @@ def spc_main_graph(request,family=''):
     if family=='':
         family = objfamily[0].name
 
-    st=Station.objects.filter(critical=True,family__name=family).order_by('ordering')
-    params = Parameter.objects.filter(critical=True).order_by('ordering')
+    if station == None :
+        st=Station.objects.filter(critical=True,family__name=family).order_by('ordering')
+        params = Parameter.objects.filter(critical=True).order_by('ordering')
+        html_file="spc_main_graph.html"
+    else:
+        st=Station.objects.filter(critical=True,family__name=family,station=station).order_by('ordering')
+        params = Parameter.objects.filter(critical=True,group=station).order_by('ordering')
+        html_file="spc_main_graph_station.html"
+
 
     data={
         "title":"Production Distribution Data",
@@ -738,7 +745,7 @@ def spc_main_graph(request,family=''):
         "family" : objfamily,
         "form" : form
     }
-    return render(request, 'production/spc_main_graph.html',context)
+    return render(request, 'production/%s' % html_file ,context)
 
 
 def spc_filter(request):
@@ -1708,15 +1715,18 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
 
     print ('Range and Group from %s to %s' % (start_date,stop_date))
 
-    st=Station.objects.get(station=station)
+    st_qs = Station.objects.get(station=station,family__name=family)
+    parameter_qs = Parameter.objects.filter(group=station)
+    print (parameter_qs.count())
     # print (station)
 
     data={
         "title":"Group by Report",
         "family" : family,
         "station" : station,
-        "station_qs":st,
+        "station_qs":st_qs,
         "parameter" :parameter,
+        "parameter_qs" :parameter_qs,
         "date_range" : date_range,
         "date_from_str":start_date,
         "date_to_str":stop_date,
