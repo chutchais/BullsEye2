@@ -143,11 +143,11 @@ admin.site.register(Family,FamilyAdmin)
 
 class ParameterAdmin(admin.ModelAdmin):
     search_fields = ['name','group','description']
-    list_filter = ['group','units','activated','critical']
-    list_display = ('name','units','group','attribute','description','activated','created_date','modified_date',
+    list_filter = ['critical','station__station','group','units','activated']
+    list_display = ('name','units','group','station','attribute','description','activated','created_date','modified_date',
         'critical','ordering')
     fieldsets = [
-        (None,               {'fields': ['name','units','group','description','attribute','activated','critical','ordering']}),
+        (None,               {'fields': ['name','units','group','station','description','attribute','activated','critical','ordering']}),
     ]
     
 admin.site.register(Parameter,ParameterAdmin)

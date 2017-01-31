@@ -80,7 +80,7 @@ class Station(models.Model):
 	ordering = models.IntegerField(default=1)
 	
 	def __str__(self):
-		return ('%s : %s' % (self.station,self.name))
+		return ('%s : %s : %s' % (self.family,self.station,self.name))
 
 
 class Routing(models.Model):
@@ -200,6 +200,7 @@ class Parameter(models.Model):
 	critical = models.BooleanField(verbose_name ='Critical parameter?',default=False)
 	ordering = models.IntegerField(default=1)
 	attribute = models.ForeignKey('ParameterAttribute' ,related_name='attribute_list',blank=True,null=True)
+	station = models.ForeignKey('Station' ,related_name='parameter_used',blank=True,null=True)
 	
 	def __str__(self):
 		return ("%s" % (self.description))

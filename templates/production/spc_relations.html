@@ -23,8 +23,8 @@
 
         <div class="row">
           <div class="col-md-12 col-sm-12 col-xs-12">
-              <div id="head-title" class="col-md-6 col-sm-6 col-xs-6">
-                <h3>{{data.family}} : {{ data.station}}-{{data.station_qs.description}} <small> on {{data.date_from}} to {{data.date_to}}</small></h3>
+              <div id="title" class="col-md-6 col-sm-6 col-xs-6">
+                <h3>{{data.family}}:{{ data.station}}:{{data.station_qs.description}} <small> on {{data.date_from}} to {{data.date_to}}</small></h3>
               </div>
               <div id="head-title" class="col-md-6 col-sm-6 col-xs-6">
                 <div class="pull-right">
@@ -185,7 +185,7 @@
                  <!-- Parameter Section -->
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <div class="x_panel">
-                        <div id="graph-forward" class="x_content">
+                        <div id="graph-histogram" class="x_content">
                         <!--   Start Content -->
                         <!-- <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family data.station data.parameter|to_slash '7day' %}" > -->
                           <img bgcolor=red class="img-responsive" src="/dashboard/graph/histogram/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/{{data.date_range}}">
@@ -260,6 +260,7 @@
                 
                 $(this).attr('src', newimgscr);
                 var test =$(this).attr('src');
+
                 //alert(test );
             });
 
@@ -269,13 +270,7 @@
                    
       });
 
-      function escapeRegExp(str) {
-          return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-      }
 
-      function replaceAll(str, find, replace) {
-          return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
-        }
 
       $('select[name=opt_all_param]').on('change', function() {
           var selected_value=$(this).find(":selected").val()
@@ -283,12 +278,33 @@
           
           var imgscr=$('#graph-body img').attr('src');
           var param_name=$('#parameter').text();
+          var title=$('#title').text();
+          title =title.trim()
+          var res = title.split(":")
+          var family=res[0];
+          var station=res[1];
+          var range ='7day';
+          var parameter= selected_value.replace('/','-slash-')
+          var new_url= '/dashboard/graph/boxplot/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + range +'/'
+          var new_url_hist = '/dashboard/graph/histogram/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + range +'/'
+          // $(this).attr("src", src_new);
+          // alert (parameter);
+          $('#parameter').text(parameter);
+          $('#graph-body img').each(function(){
+                
+                $(this).attr('src', new_url);
+            });
+
+          $('#graph-histogram img').each(function(){
+                
+                $(this).attr('src', new_url_hist);
+            });
           
           // var url ="{% url 'graph_boxplot_by_range' 'family' 'station' 'parameter'  'range' %}"
           // url = url.replace('family',{{data.family}})
-          var myRegExp = new RegExp('RXPDXY Responsivity (75C-slash-196THz)','g');
-          imgscr = imgscr.replace(myRegExp,"XXX")
-          test= imgscr.split(param_name).join(selected_value)
+          // var myRegExp = new RegExp('RXPDXY Responsivity (75C-slash-196THz)','g');
+          // imgscr = imgscr.replace(myRegExp,"XXX")
+          // test= imgscr.split(param_name).join(selected_value)
           // alert(test);
       });
 

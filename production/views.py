@@ -1131,7 +1131,13 @@ def execute_transaction(xml):
             objParam,created = Parameter.objects.get_or_create(name=code,group=operation)
             if created:
                 objParam.description=description
+                objParam.station = objStation
                 objParam.save()
+            else:
+                objParam.station = objStation
+                objParam.save()
+
+
 
             if objParam.activated :
                 #To put data into Value field
@@ -1716,7 +1722,7 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
     print ('Range and Group from %s to %s' % (start_date,stop_date))
 
     st_qs = Station.objects.get(station=station,family__name=family)
-    parameter_qs = Parameter.objects.filter(group=station)
+    parameter_qs = Parameter.objects.filter(station=st_qs)
     print (parameter_qs.count())
     # print (station)
 
