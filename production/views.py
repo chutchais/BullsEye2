@@ -36,6 +36,7 @@ from django.db import models
 import json
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
+from .sci_utilities import is_outlier
 
 def get_family(request):
     #campus = models.Campus.objects.get(pk=campus_id)
@@ -720,11 +721,13 @@ def spc_main_graph(request,family='',station=None):
 
     if station == None :
         st=Station.objects.filter(critical=True,family__name=family).order_by('ordering')
+        # params = Parameter.objects.filter(critical=True).order_by('ordering')
         params = Parameter.objects.filter(critical=True).order_by('ordering')
         html_file="spc_main_graph.html"
     else:
         st=Station.objects.filter(critical=True,family__name=family,station=station).order_by('ordering')
-        params = Parameter.objects.filter(critical=True,group=station).order_by('ordering')
+        # params = Parameter.objects.filter(critical=True,group=station).order_by('ordering')
+        params = Parameter.objects.filter(critical=True,station=st).order_by('ordering')
         html_file="spc_main_graph_station.html"
 
 
@@ -1128,15 +1131,19 @@ def execute_transaction(xml):
             each_result = True if param_result=='Passed' else False
             #9.1)Parameter
             #Edit by Chutchai S on Nov 10,2016 -- To fix same parameter for many operation
-            objParam,created = Parameter.objects.get_or_create(name=code,group=operation)
+            # objParam,created = Parameter.objects.get_or_create(name=code,group=operation)
+            # if created:
+            #     objParam.description=description
+            #     objParam.station = objStation
+            #     objParam.save()
+            # else:
+            #     objParam.station = objStation
+            #     objParam.save()
+            #Modify by Chutchai on Feb1,2017 To support Station on Parameter
+            objParam,created = Parameter.objects.get_or_create(name=code,group=operation,station=objStation)
             if created:
                 objParam.description=description
-                objParam.station = objStation
                 objParam.save()
-            else:
-                objParam.station = objStation
-                objParam.save()
-
 
 
             if objParam.activated :
@@ -1315,13 +1322,23 @@ def graph_histogram(request,family,station,
 
 
     #get Aggregate data
-    means = pt.aggregate(mean=Avg('value')).get('mean')
-    stddev = pt.aggregate(stddev=StdDev('value')).get('stddev')
+    # means = pt.aggregate(mean=Avg('value')).get('mean')
+    # stddev = pt.aggregate(stddev=StdDev('value')).get('stddev')
 
     max_value  = pt.aggregate(max=Max('value')).get('max')
     min_value  = pt.aggregate(min=Min('value')).get('min')
 
     x = pt.values_list('value', flat=True)
+    # Remove Outlier
+    myarray=np.asarray(x)
+    myrej = reject_outliers(myarray, m = 10)
+    x=myrej.tolist()
+    #---------------
+    means=np.mean(x)
+    stddev=np.std(x)
+    median=np.median(x)
+
+
 
     limit_min = pt.aggregate(min=Max('limit_min')).get('min')
     limit_max = pt.aggregate(max=Min('limit_max')).get('max')
@@ -1722,7 +1739,7 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
     print ('Range and Group from %s to %s' % (start_date,stop_date))
 
     st_qs = Station.objects.get(station=station,family__name=family)
-    parameter_qs = Parameter.objects.filter(station=st_qs)
+    parameter_qs = Parameter.objects.filter(group=station,station=st_qs)
     print (parameter_qs.count())
     # print (station)
 
@@ -1833,7 +1850,7 @@ def graph_boxplot_by_date(request,family,station,
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     from matplotlib.figure import Figure
     from matplotlib import pyplot as plt
-
+    import numpy as np
 
     #Query data
     import datetime
@@ -1860,6 +1877,15 @@ def graph_boxplot_by_date(request,family,station,
         performing__sn_wo__workorder__product__family__name=family,
         performing__station__station=station).exclude(value = None)
 
+    #Add on Feb 2,2017 To get all list
+    alllist= list(pt.values_list('value',flat=True))
+    means1= np.mean(alllist)
+    allarray_rejected = reject_outliers(np.asarray(alllist),10)
+    alllist = allarray_rejected.tolist()
+    means = np.mean(alllist) #Mean after remove outlier
+    print ('All list is %s -- %s' % (means1,means))
+    # 
+
     spec_min= pt.aggregate(min=Min('limit_min')).get('min') #pt[0].limit_min
     spec_max = pt.aggregate(max=Max('limit_max')).get('max')
 
@@ -1873,8 +1899,8 @@ def graph_boxplot_by_date(request,family,station,
         param_desc=parameter
         total_sample=0
 
-    means = pt.aggregate(mean=Avg('value')).get('mean')
-    print ('Total = %s , means = %s' %(pt.count(),means))
+    # means = pt.aggregate(mean=Avg('value')).get('mean')
+    # print ('Total = %s , means = %s' %(pt.count(),means))
 
     if date_range=='date':
         delta = date_to - date_from
@@ -1895,7 +1921,20 @@ def graph_boxplot_by_date(request,family,station,
                 performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day),
                 performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
-            date_x_data.append(mylist)
+            
+            # Remove Outlier
+            # myarray=np.asarray(mylist)
+            # if len(myarray)>1:
+            #     myrej = reject_outliers2(myarray,means, m = 5)
+            #     mylist = myrej.tolist()
+            #---------------
+            date_x_data.append(reject_outliers3(mylist,means,5))
+
+        # filtered = date_x_data[~is_outlier(date_x_data)]
+        # filtered = reject_outliers(date_x_data)
+        # print (date_x_data)
+        # date_x_data = filtered
+
     elif date_range=='week':
         last_week_number=6
         date_to = datetime.datetime.strptime(date_to_str,'%Y-%m-%d') #Not last day of week
@@ -1922,6 +1961,8 @@ def graph_boxplot_by_date(request,family,station,
                 performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
             date_x_data.append(mylist)
+
+
     elif date_range=='month':
         last_month_number=5
         last_week_number=20
@@ -2189,7 +2230,11 @@ def graph_boxplot_by_date(request,family,station,
     # plt.tick_params(axis='both', which='minor', labelsize=18)
 
     ax = fig.add_subplot(111) #211 ,111
-   
+
+    # Remove Outlier point
+    # print (date_x_data)
+    # 
+    print ('Data : -- Label %s' %(date_labels))
     bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True,sym='')#remove filer (outlier)
     #date_x_data=reject_outliers(date_x_data)
     # bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)
@@ -2333,13 +2378,43 @@ def box_plot(ax,data,means,title=''):
 
 
 
-def reject_outliers(data):
+# def reject_outliers(data):
+#     import numpy as np
+#     m = 2
+#     u = np.mean(data)
+#     s = np.std(data)
+#     filtered = [e for e in data if (u - 2 * s < e < u + 2 * s)]
+#     return filtered
+def reject_outliers(data, m = 2):
     import numpy as np
-    m = 2
-    u = np.mean(data)
-    s = np.std(data)
-    filtered = [e for e in data if (u - 2 * s < e < u + 2 * s)]
-    return filtered
+    d = np.abs(data - np.median(data))
+    # d = np.abs(data - median)
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0
+    return data[s<m]
+
+def reject_outliers2(data, std,m = 2):
+    import numpy as np
+    # d = np.abs(data - np.median(data))
+    # mdev = np.median(d)
+    limit=std*m
+    d= data+0
+    # s = 1 if (np.abs(d) < limit) else 0
+    return data[np.abs(d) < np.abs(limit)]
+
+def reject_outliers3(data, means,m = 5): #data = List
+    import numpy as np
+    # Remove Outlier
+    myarray=np.asarray(data)
+    if len(myarray)>1:
+        myrej = reject_outliers2(myarray,means, m )
+        mylist = myrej.tolist()
+    else:
+        mylist = data
+    #---------------
+    return mylist
+
+            
 
 
 def week_magic(day):

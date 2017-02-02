@@ -143,7 +143,7 @@ admin.site.register(Family,FamilyAdmin)
 
 class ParameterAdmin(admin.ModelAdmin):
     search_fields = ['name','group','description']
-    list_filter = ['critical','station__station','group','units','activated']
+    list_filter = ['critical','station__family','station__station','group','units','activated']
     list_display = ('name','units','group','station','attribute','description','activated','created_date','modified_date',
         'critical','ordering')
     fieldsets = [

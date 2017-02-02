@@ -6,6 +6,10 @@ register = template.Library()
 def to_slash(value):
     return value.replace("/","-slash-")
 
+@register.filter
+def un_slash(value):
+    return value.replace("-slash-","/")
+
 
 @register.assignment_tag
 def percent(xin,xout):
@@ -25,9 +29,14 @@ def number_passed(performing,family,station):
 def in_family(stations, family):
     return stations.filter(family=family).order_by('ordering')
 
+# @register.filter
+# def critical_station(parameter, station):
+#     return parameter.filter(group=station,critical=True).order_by('ordering')
+
 @register.filter
 def critical_station(parameter, station):
-    return parameter.filter(group=station,critical=True).order_by('ordering')
+    return parameter.filter(station=station,critical=True).order_by('ordering')
+
 
 @register.filter
 def annotate_parameter(performingdetails):

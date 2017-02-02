@@ -31,7 +31,7 @@
                   
                   <select class="selectpicker" title="Choose one of the following..." data-width="auto" data-style="btn-info"  data-live-search="true" name="opt_all_param">
                     {% for item in data.parameter_qs %}
-                    <option value="{{item.name}}" >{{item.description}}</option>
+                    <option value="{{item.name|to_slash}}" >{{item.description}}</option>
                     {% endfor %}
                   </select>
                   
@@ -52,7 +52,7 @@
                 <div class="dashboard_graph">
                     <div class="row x_title">
                       <div id="parameter" class="col-md-12">
-                        <small>{{ data.parameter}}<small>
+                        <small>{{ data.parameter|un_slash}}<small>
                       </div>
                       <div class="col-md-12"></div>
                     </div>
@@ -275,7 +275,7 @@
       $('select[name=opt_all_param]').on('change', function() {
           var selected_value=$(this).find(":selected").val()
           var selected_param=$(this).find(":selected").text()
-          
+          // alert (selected_value);
           var imgscr=$('#graph-body img').attr('src');
           var param_name=$('#parameter').text();
           var title=$('#title').text();
@@ -284,12 +284,17 @@
           var family=res[0];
           var station=res[1];
           var range ='7day';
-          var parameter= selected_value.replace('/','-slash-')
+          var parameter= selected_value.replace('/','-slash-');
+
+
           var new_url= '/dashboard/graph/boxplot/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + range +'/'
           var new_url_hist = '/dashboard/graph/histogram/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + range +'/'
           // $(this).attr("src", src_new);
           // alert (parameter);
-          $('#parameter').text(parameter);
+          var var1=parameter.replace('-slash-','/');
+          var var2=var1.replace('-slash-','/');
+          var var3=var2.replace('-slash-','/');
+          $('#parameter').text(var3);
           $('#graph-body img').each(function(){
                 
                 $(this).attr('src', new_url);
