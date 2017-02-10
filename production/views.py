@@ -1320,6 +1320,14 @@ def graph_histogram(request,family,station,
         print ('No data %s %s %s %s %s' % (family,station,date_from,date_to,parameter))
         return HttpResponse("Not Found Data")
 
+    if pt.count()>0:
+        station_name=pt[0].performing.station.name
+        param_desc=pt[0].parameter.description
+        total_sample=pt.count()
+    else:
+        station_name=station
+        param_desc=parameter
+        total_sample=0
 
     #get Aggregate data
     # means = pt.aggregate(mean=Avg('value')).get('mean')
@@ -1388,7 +1396,7 @@ def graph_histogram(request,family,station,
     Cpu = (limit_max-means)/(3*sigma)
     Cpk = Cpl if Cpl < Cpu else Cpl
     ax.set_ylabel('Probability')
-    ax.set_title(r'%s ($n$=%s)' % (parameter,pt.count()),fontsize=16)
+    ax.set_title(r'%s ($n$=%s)' % (param_desc,total_sample),fontsize=16)
     #ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
     ax.text(0, 0.98, ('$\mu = %0.2f $, $\sigma=%0.2f$')% (means,stddev),
         verticalalignment='top', horizontalalignment='left',
@@ -1763,7 +1771,7 @@ def graph_relations(request,family,station,parameter,date_range ='7day',groupby=
     return render(request, 'production/spc_relations.html',context)
     # return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
 
-def graph_boxplot_by_range_group_value(request,family,station,parameter,date_range ='7day',groupby='date',value=''):
+def graph_boxplot_by_range_group_value(request,family,station,parameter,date_range ='7day',groupby='date',value=None):
     import datetime
     from datetime import date
 
@@ -1788,7 +1796,7 @@ def graph_boxplot_by_range_group_value(request,family,station,parameter,date_ran
 
     print ('Range ,Group and Value from %s to %s' % (date_from,date_to))
 
-    return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by)
+    return graph_boxplot_by_date(request,family,station,date_from,date_to,parameter,group_by,value)
 
 def graph_boxplot_by_range_group(request,family,station,parameter,date_range ='7day',groupby='date'):
     import datetime
@@ -1914,26 +1922,12 @@ def graph_boxplot_by_date(request,family,station,
         for d in date_serise:
             date_obj_start=datetime.datetime.strptime(d,'%Y-%m-%d')
             date_obj_end =  date_obj_start + datetime.timedelta(days=1)
-            # mylist = list(pt.filter(
-            #     performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
-            #     ).values_list('value',flat=True))
             mylist = list(pt.filter(
                 performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day),
                 performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
-            
-            # Remove Outlier
-            # myarray=np.asarray(mylist)
-            # if len(myarray)>1:
-            #     myrej = reject_outliers2(myarray,means, m = 5)
-            #     mylist = myrej.tolist()
-            #---------------
             date_x_data.append(reject_outliers3(mylist,means,5))
 
-        # filtered = date_x_data[~is_outlier(date_x_data)]
-        # filtered = reject_outliers(date_x_data)
-        # print (date_x_data)
-        # date_x_data = filtered
 
     elif date_range=='week':
         last_week_number=6
@@ -1960,7 +1954,7 @@ def graph_boxplot_by_date(request,family,station,
                 performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day),
                 performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day)
                 ).values_list('value',flat=True))
-            date_x_data.append(mylist)
+            date_x_data.append(reject_outliers3(mylist,means,5))
 
 
     elif date_range=='month':
@@ -1993,7 +1987,7 @@ def graph_boxplot_by_date(request,family,station,
             mylist = list(pt.filter(
                 performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day)
                 ).values_list('value',flat=True))
-            date_x_data.append(mylist)
+            date_x_data.append(reject_outliers3(mylist,means,5))
 
     elif date_range=='tester':
         
@@ -2003,23 +1997,30 @@ def graph_boxplot_by_date(request,family,station,
             for tester in pt.distinct('performing__tester').values_list('performing__tester',flat=True):
                 mylist = list(pt.filter(performing__tester=tester).values_list('value',flat=True))
                 # mylist.remove(max(mylist))
-                date_x_data.append(mylist)
+                date_x_data.append(reject_outliers3(mylist,means,5))
         else: #By Tester Slot -- attribute_code=5111
-            date_labels = pt.distinct('performing__tester').values_list('performing__tester',flat=True)
+            date_labels,date_serise,date_x_data,total_sample,date_range = drawGraphByParameterValue(date_from,date_to,pt,means,'tester',value)
+
 
     elif date_range=='part':
-        date_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
-        date_x_data=[]
-        for product in pt.distinct('performing__sn_wo__workorder__product').values_list('performing__sn_wo__workorder__product',flat=True):
-            mylist = list(pt.filter(performing__sn_wo__workorder__product=product).values_list('value',flat=True))
-            date_x_data.append(mylist)
-    
+        if value == None :
+            date_labels = pt.distinct('performing__sn_wo__workorder__product__name').values_list('performing__sn_wo__workorder__product__name',flat=True)
+            date_x_data=[]
+            for product in pt.distinct('performing__sn_wo__workorder__product').values_list('performing__sn_wo__workorder__product',flat=True):
+                mylist = list(pt.filter(performing__sn_wo__workorder__product=product).values_list('value',flat=True))
+                date_x_data.append(reject_outliers3(mylist,means,5))
+        else: #By Tester Slot -- attribute_code=5111
+            date_labels,date_serise,date_x_data,total_sample,date_range = drawGraphByParameterValue(date_from,date_to,pt,means,'part',value)
+
     elif date_range=='operator':
-        date_labels =pt.distinct('performing__user__username').values_list('performing__user__username',flat=True)
-        date_x_data=[]
-        for user in pt.distinct('performing__user__username').values_list('performing__user__username',flat=True):
-            mylist = list(pt.filter(performing__user__username=user).values_list('value',flat=True))
-            date_x_data.append(mylist)
+        if value == None :
+            date_labels =pt.distinct('performing__user__username').values_list('performing__user__username',flat=True)
+            date_x_data=[]
+            for user in pt.distinct('performing__user__username').values_list('performing__user__username',flat=True):
+                mylist = list(pt.filter(performing__user__username=user).values_list('value',flat=True))
+                date_x_data.append(reject_outliers3(mylist,means,5))
+        else:
+            date_labels,date_serise,date_x_data,total_sample,date_range = drawGraphByParameterValue(date_from,date_to,pt,means,'operator',value)
 
     elif date_range=='temperature':
         # Same Parameter ,Same Frequency and Same station
@@ -2048,7 +2049,7 @@ def graph_boxplot_by_date(request,family,station,
         for p in date_labels:
             # print (p)
             mylist = list(param_req.filter(parameter__attribute__temperature=p).values_list('value',flat=True))
-            date_x_data.append(mylist)
+            date_x_data.append(reject_outliers3(mylist,means,5))
 
         param_desc= '%s (%s)' % (cuttedParam,currFreq)
 
@@ -2086,7 +2087,7 @@ def graph_boxplot_by_date(request,family,station,
         for p in date_labels:
             # print (p)
             mylist = list(param_req.filter(parameter__attribute__frequency=p).values_list('value',flat=True))
-            date_x_data.append(mylist)
+            date_x_data.append(reject_outliers3(mylist,means,5))
             new_date_labels.append(p.replace(unitName,''))
 
         date_labels=new_date_labels #Value with
@@ -2132,7 +2133,7 @@ def graph_boxplot_by_date(request,family,station,
                     parameter__name=date_range,performing__station=param_station,value_str=p).values_list('performing__sn_wo')
 
                 mylist = list(pt.filter(performing__sn_wo__in=snlist_parameter).values_list('value',flat=True))
-                date_x_data.append(mylist)
+                date_x_data.append(reject_outliers3(mylist,means,5))
             if pt_new.count()>0 :
                 date_range=pt_new[0].parameter.description
             print ('Finished')
@@ -2206,7 +2207,7 @@ def graph_boxplot_by_date(request,family,station,
                 qs_snlist_cfp = pt_assy.filter(value_str__in =snlist_pic_used_p)
                 sn_list_cfp = qs_snlist_cfp.values_list('performing__sn_wo',flat=True)
                 mylist = list(pt.filter(performing__sn_wo__in=sn_list_cfp).values_list('value',flat=True))
-                date_x_data.append(mylist)
+                date_x_data.append(reject_outliers3(mylist,means,5))
 
 
                 print (qs_pic_used_p.count())
@@ -2234,7 +2235,7 @@ def graph_boxplot_by_date(request,family,station,
     # Remove Outlier point
     # print (date_x_data)
     # 
-    print ('Data : -- Label %s' %(date_labels))
+    # print ('Data : -- Label %s' %(date_labels))
     bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True,sym='')#remove filer (outlier)
     #date_x_data=reject_outliers(date_x_data)
     # bp_dict=ax.boxplot(date_x_data,labels=date_labels,showmeans=True)
@@ -2324,6 +2325,46 @@ def graph_boxplot_by_date(request,family,station,
 #     mdev = np.median(d)
 #     s = d/mdev if mdev else 0.
 #     return data[s<m]
+
+def drawGraphByParameterValue(date_from,date_to,pt,means,key,value):
+    import datetime
+    print ("Report distribution by Parameter and Value : %s" % value)
+    if key=='tester':
+        kwargs = {
+        'performing__tester': value
+        }
+
+    if key=='part':
+        kwargs = {
+        'performing__sn_wo__workorder__product__name': value
+        }
+
+    if key=='operator':
+        kwargs = {
+        'performing__user__username': value
+        }
+
+    delta = date_to - date_from
+    date_labels = [date_from.strftime('%d')]
+    date_serise = [date_from.strftime('%Y-%m-%d')]
+    for i in range(1,delta.days):
+        date_labels.append((date_from + datetime.timedelta(days=i)).strftime('%d'))
+        date_serise.append((date_from + datetime.timedelta(days=i)).strftime('%Y-%m-%d'))
+    date_x_data=[]
+    total_sample=0
+    for d in date_serise:
+        date_obj_start=datetime.datetime.strptime(d,'%Y-%m-%d')
+        date_obj_end =  date_obj_start + datetime.timedelta(days=1)
+        mylist = list(pt.filter(
+            performing__started_date__gt=datetime.datetime(date_obj_start.year,date_obj_start.month,date_obj_start.day),
+            performing__started_date__lt=datetime.datetime(date_obj_end.year,date_obj_end.month,date_obj_end.day),
+            **kwargs
+            ).values_list('value',flat=True))
+        total_sample=total_sample+len(mylist)
+        date_x_data.append(reject_outliers3(mylist,means,5))
+
+    return date_labels,date_serise,date_x_data,total_sample,('%s = %s'%(key,value))
+
 
 def drawEmptyGraph(date_range,message=None):
     import matplotlib.mlab as mlab

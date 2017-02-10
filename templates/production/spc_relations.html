@@ -62,7 +62,7 @@
                           <div id="graph-body" class="x_content">
                           <!--   Start Content -->
                           <!-- <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family data.station data.parameter|to_slash '7day' %}" > -->
-                            <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/7day/">
+                            <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/{{data.date_range}}/">
                         <!--   </a> -->
 
                           </div>
@@ -164,7 +164,7 @@
                     <div class="col-md-12" id="topic">
                       <!-- <h3>Looking at<small></small></h3> -->
                       
-                        <p class="lead">Distribution </p>
+                        <p class="lead">Histogram </p>
 
 <!--                         <select class="selectpicker" data-style="btn-danger"  data-live-search="true" name="opt_param">
                             <optgroup label="General">
@@ -205,10 +205,22 @@
               <div class="dashboard_graph">
 
                   <div class="row x_title">
-                    <div class="col-md-12" id="yield">
+                    <div class="col-md-12" id="Distribution_by_value">
                       <!-- <h3>Looking at<small></small></h3> -->
                       
-                        <p class="lead">Yield of   </p>
+                        <p class="lead">Contribution by   </p>
+                        <div class="form-group row">
+                        
+                        <div class="col-md-12 col-sm12 col-xs-12">
+                          <div class="col-md-8 col-8 col-xs-8">
+                            <input class="form-control" type="text" value="" id="param_value">
+                          </div>
+                          <div id="btn_show_distribute" class="col-md-4 col-4 col-xs-4">
+                            <button type="button" class="btn btn-default">See Contribution</button>
+                          </div>
+                        </div>
+
+                    </div>
 
                     </div>
                     <div class="col-md-12"></div>
@@ -216,11 +228,9 @@
                  <!-- Parameter Section -->
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <div class="x_panel">
-                        <div id="graph-forward" class="x_content">
-                        <!--   Start Content -->
-                        <!-- <a id="changeimgurl" href= "{% url 'graph_boxplot_by_range' data.family data.station data.parameter|to_slash '7day' %}" > -->
-                         <!--  <img bgcolor=red class="img-responsive" src="/dashboard/graph/boxplot/{{data.family}}/{{data.station}}/{{data.parameter|to_slash}}/{{data.date_range}}"> -->
-                        <!-- </a> -->
+                        <div id="graph-details" class="x_content">
+
+                        <img bgcolor=red class="img-responsive" src="">
 
                         </div>
                     </div>
@@ -229,12 +239,16 @@
                   <div class="clearfix"></div>
                   </div>
               <!--End Detail Section - Yield-->
+
               </div>
           </div>
           <!-- End 2nd Section -->
 
           </div>
+
+          <div id="date_range">{{data.date_range}}</div>
         </div>
+
       </div>
 
         <!-- /page content -->
@@ -245,6 +259,20 @@
         {% block java_content %}
         <script>
     $(function(){
+
+      $( "#btn_show_distribute" ).click(function() {
+        var param_value = $('#param_value').val();
+              var imgscr=$('#graph-relation img').attr('src');
+              var newimgscr =imgscr + param_value  + "/";
+              //$('#graph-relation img').attr('src', newimgscr);
+              //var url ="{% url 'spc_main_family' '0'   %}".replace('0',selected_family)
+              // alert(newimgscr );
+              $('#graph-details img').each(function(){
+                
+                $(this).attr('src', newimgscr);
+                var test =$(this).attr('src');
+            });
+      });
 
       $('select[name=opt_param]').on('change', function() {
               //alert( this.value ); 
@@ -265,7 +293,7 @@
             });
 
               // $('#topic p').text('Distribution of :' + selected_param2);
-              // $('#yield p').text('Yield of :' + selected_param2);
+              $('#Distribution_by_value p').text('Contribution by ' + selected_param2);
 
                    
       });
@@ -273,6 +301,8 @@
 
 
       $('select[name=opt_all_param]').on('change', function() {
+          var date_range=$('#date_range').text();
+
           var selected_value=$(this).find(":selected").val()
           var selected_param=$(this).find(":selected").text()
           // alert (selected_value);
@@ -283,12 +313,11 @@
           var res = title.split(":")
           var family=res[0];
           var station=res[1];
-          var range ='7day';
           var parameter= selected_value.replace('/','-slash-');
 
 
-          var new_url= '/dashboard/graph/boxplot/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + range +'/'
-          var new_url_hist = '/dashboard/graph/histogram/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + range +'/'
+          var new_url= '/dashboard/graph/boxplot/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + date_range +'/'
+          var new_url_hist = '/dashboard/graph/histogram/' + family +'/'+station +'/' + encodeURIComponent(parameter) + '/' + date_range +'/'
           // $(this).attr("src", src_new);
           // alert (parameter);
           var var1=parameter.replace('-slash-','/');
