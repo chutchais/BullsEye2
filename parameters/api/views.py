@@ -75,17 +75,22 @@ class ParameterListAPIView(ListAPIView):
 	filter_backends=[SearchFilter,OrderingFilter]
 	# permission_classes = [AllowAny]
 	search_fields =['name','description','station__station','station__description']
-	pagination_class = ParameterPageNumberPagination
+	# pagination_class = ParameterPageNumberPagination
+	filter_fields = ['name']
 
 	def get_queryset(self,*args,**kwargs):
-		queryset_list=Parameter.objects.filter(station__isnull=False , activated=True)
-		query = self.request.GET.get("q")
-		if query:
-			queryset_list = queryset_list.filter(
-					Q(description__icontains=query)|
-					Q(name__icontains=query)|
-					Q(station__station__icontains=query)|
-					Q(station__description__icontains=query)|
-					Q(station__family__name__icontains=query)
-					).distinct()
+		queryset_list=None
+		default_critical=False
+		station = self.request.GET.get("station")
+		family = self.request.GET.get("family")
+		critical = self.request.GET.get("critical",default_critical)
+		if station and family:
+			queryset_list=Parameter.objects.filter(station__station =station,
+				station__family__name=family,critical=critical)
+		elif family:
+			queryset_list=Parameter.objects.filter(station__family__name=family,
+				critical=critical)
+		# else :
+		# 	queryset_list=Parameter.objects.filter(critical=critical)
+		
 		return queryset_list

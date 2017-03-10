@@ -85,12 +85,13 @@ class StationListSerializer (ModelSerializer):
 			'station',
 			'name',
 			'description',
-			'created_date',
-			'modified_date',
-			'user',
+			# 'created_date',
+			# 'modified_date',
+			# 'user',
 			'critical',
 			'family',
-			'ordering'
+			'ordering',
+			'critical'
 		]
 
 

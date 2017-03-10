@@ -8,15 +8,19 @@ angular.module('try', [
     'ngRoute',
     // 'ngSanitize',
     // 'ng-showdown',
-    // 'ui.bootstrap',
+    'ui.bootstrap',
     // // internal
     // 'blogDetail',
     // 'blogList',
     // 'confirmClick',
     // 'loginDetail',
     // 'registerDetail',
-    'modelList',
+
+    //API Service
     'station',
     'family',
+    'parameter',
+    //Internal
+    'modelList',
     'tryNav',
 ]);

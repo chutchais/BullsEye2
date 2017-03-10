@@ -70,23 +70,18 @@ from .serializers import (
 	# permission_classes = [IsOwnerOrReadOnly]
 
 class StationListAPIView(ListAPIView):
-	# queryset=Post.objects.all()
+	queryset=Station.objects.all()
 	serializer_class=StationListSerializer
 	filter_backends=[SearchFilter,OrderingFilter]
 	# permission_classes = [AllowAny]
 	search_fields =['station','family__name','name','description']
-	# filter_fields = ['station']
+	filter_fields = ['station']
 	# pagination_class = StationPageNumberPagination
 
 	def get_queryset(self,*args,**kwargs):
 		queryset_list=Station.objects.all()
 		query = self.request.GET.get("family")
 		if query:
-			# queryset_list = queryset_list.filter(
-			# 		Q(station=query)|
-			# 		Q(description__icontains=query)|
-			# 		Q(name__icontains=query)
-			# 		).distinct()
 			queryset_list = queryset_list.filter(
 					Q(family__name=query)&
 					Q(critical=True)

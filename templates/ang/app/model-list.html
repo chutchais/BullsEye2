@@ -3,10 +3,16 @@ Family : {{ model }}
 <!-- {{stations}} -->
 
 <div ng-repeat="station in stations | orderBy: 'ordering'">
-  {{station.name}}
+  <h2>{{station.name}}</h2>
+      <div ng-repeat="parameter in parameters | filter:currStation(station) | orderBy: 'ordering' | limitTo : 5 ">
+        {{parameter.name}} -- {{ parameter.description}}
+      </div>
 </div>
+<br>
 
 
+
+<!-- //| filter: { color: 'red' } -->
 <!-- 
 <div class='row'>
 <div class='col-sm-6 col-sm-offset-3'>

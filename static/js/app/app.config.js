@@ -17,8 +17,8 @@ angular.module('try').
           $routeProvider.
               when("/", {
                 // templateUrl: "/api/templates/about.html"
-                template: "<model-list></model-list>"
-                // templateUrl: "/api/templates/try-nav.html"
+                // template: "<model-list></model-list>"
+                templateUrl: "/api/templates/about.html"
               }).
               when("/distribute", {
                 template: "<model-list></model-list>"

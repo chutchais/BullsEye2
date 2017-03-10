@@ -21,11 +21,11 @@ angular.module('tryNav', [])
 		  // console.log(todos);
 
 		  $scope.familys=todos
-		  angular.forEach(todos, function(todo) {
-		     if (todo.critical){
-		     	console.log(todo.name);
-		 	  }
-		  });
+		  // angular.forEach(todos, function(todo) {
+		  //    if (todo.critical){
+		  //    	console.log(todo.name);
+		 	//   }
+		  // });
 		  
 		});
 
@@ -36,15 +36,17 @@ angular.module('tryNav', [])
 	    address: '1600 Amphitheatre'
 	  };
 }])
-.directive('tryNav', function($cookies, $location) {
+.directive('tryNav', function(Parameter,$cookies, $location) {
   return {
   	restrict: "E",
     templateUrl: '/api/templates/try-nav.html',
     link: function (scope, element, attr) { 
-            // scope.items = Post.query()
+            
+            scope.items = Parameter.get({"family":"Acadia","critical":"False"})
+            console.log('requery');
 
             scope.selectItem = function($family){
-                console.log($family)
+                // console.log('tryNav directive :'+$family)
                 $location.path("/distribute/" + $family) // $item.slug was added after completion of content
                 // scope.searchQuery = ""
             }

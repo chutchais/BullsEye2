@@ -1,3 +1,3 @@
 'use strict';
 
-angular.module('modelList', ['station']);
+angular.module('modelList', ['station','parameter']);

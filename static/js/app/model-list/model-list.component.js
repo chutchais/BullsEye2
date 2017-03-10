@@ -6,21 +6,43 @@
 angular.module('modelList').
     component('modelList', {
         templateUrl: '/api/templates/model-list.html',
-        controller:['Station','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
-        function(Station,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
+        controller:['Station','Parameter','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
+        function(Station,Parameter,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
             var family = $routeParams.model
             $scope.model=family
             // console.log(Station)
-            Station.get({"family":family},function(stations) {
-              //do something with todos
-              $scope.stations = stations
-              angular.forEach(stations, function(station) {
-                 if (true){
-                  console.log(station.family);
-                    }
-              });
-              
-            });
+
+            if (family){
+                  Station.get({"family":family},function(stations) {
+                    //do something with todos
+                    $scope.stations = stations
+                    angular.forEach(stations, function(station) {
+                       if (true){
+                        // console.log(station.family);
+                          }
+                    });
+                  });
+
+                  Parameter.get({"family":family,"critical":"True"},function(parameters) {
+                    //do something with todos
+                    $scope.parameters = parameters
+                    angular.forEach(parameters, function(parameter) {
+                       if (true){
+                         // console.log(parameter.description);
+                          }
+                    });
+                  });
+
+
+            }
+
+            $scope.currStation = function (item) { 
+             //  if (item.color === 'red' || item.color === 'blue') {
+             //  return item;
+             // }
+                // console.log(item.name)
+                return item.name;
+            };
 
             // console.log($location.search())
             // var q = $location.search().q
