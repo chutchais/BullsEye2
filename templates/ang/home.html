@@ -1,0 +1,18 @@
+{% extends "ang/base.html" %}
+
+ {% load i18n %}
+ 
+
+
+ {% block content %}
+<!-- <p>Input something in the input box:</p>
+<p>Name: <input type="text" ng-model="name"></p>
+<p ng-bind="name"></p> -->
+<div class='col-sm-12' ng-view>
+</div>
+ {% endblock content %}
+
+ {% block extra_javascript %}
+
+ {% endblock extra_javascript %}
+
