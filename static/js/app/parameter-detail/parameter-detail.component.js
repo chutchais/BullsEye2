@@ -1,60 +1,69 @@
 'use strict';
 
-
-// .controller('Controller', ['$scope','$resource','Family',function($scope,$resource,Family) {
-
-angular.module('modelList').
-    component('modelList', {
-        templateUrl: '/api/templates/model-list.html',
-        controller:['Station','Parameter','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
-        function(Station,Parameter,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
+angular.module('parameterDetail').
+    component('parameterDetail', {
+        templateUrl: '/api/templates/parameter-detail.html',
+        controller:['$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
+        function($cookies, $location, $routeParams, $rootScope, $scope,$resource){
             var family = $routeParams.model
             var station = $routeParams.station
-            $scope.model=family
-             
-
-            if (family){
-                var station_kwrg={"family":family};
-                if (station) {
-                    station_kwrg={"family":family,"station" : station}
-                }
-
-                  Station.get(station_kwrg,function(stations) {
-                    //do something with todos
-                    $scope.stations = stations
-                    angular.forEach(stations, function(station) {
-                       if (true){
-                        // console.log(station.family);
-                          }
-                    });
-                  });
-                var param_kwarg = {"family":family,"critical":"True"};
-                if (station){
-                    param_kwarg={"family":family,"station":station,"critical":"True"};
-                    }
-                    
-                  Parameter.get(param_kwarg,function(parameters) {
-                    //do something with todos
-                    $scope.parameters = parameters
-                    angular.forEach(parameters, function(parameter) {
-                       if (true){
-                         // console.log(parameter.description);
-                          }
-                    });
-                  });
-
-
-            }
-
-            $scope.currStation = function (item) { 
-                return item.station;
-            };
+            var parameter = $routeParams.parameter
+            $scope.family = family
+            $scope.station = station
+            $scope.parameter = parameter
 
             $scope.ToSlash = function(item){
-                var name=item.name;
-                var new_name = name.replace("/","-slash-")
+                // var name=item.name;
+                var new_name = item.replace("/","-slash-")
                 return new_name;
-            }
+            };
+
+            $scope.removeSlash = function(item){
+                // var name=item.name;
+                console.log(item);
+                // var new_name = item.replace("-slash-","/")
+                return item;
+            };
+            
+            $scope.replaceStr = function(x) {
+                   return x.replace("-slash-","/")
+             };
+            // console.log(parameter)
+            // console.log(Station)
+
+            // if (family){
+            //       Station.get({"family":family},function(stations) {
+            //         //do something with todos
+            //         $scope.stations = stations
+            //         angular.forEach(stations, function(station) {
+            //            if (true){
+            //             // console.log(station.family);
+            //               }
+            //         });
+            //       });
+
+            //       Parameter.get({"family":family,"critical":"True"},function(parameters) {
+            //         //do something with todos
+            //         $scope.parameters = parameters
+            //         angular.forEach(parameters, function(parameter) {
+            //            if (true){
+            //              // console.log(parameter.description);
+            //               }
+            //         });
+            //       });
+
+
+            // }
+
+            // $scope.currStation = function (item) { 
+            //     return item.station;
+            // };
+
+            // $scope.ToSlash = function(item){
+            //     var name=item.name;
+            //     var new_name = name.replace("/","-slash-")
+            //     return new_name;
+            // }
 
             // console.log($location.search())
             // var q = $location.search().q

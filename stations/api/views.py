@@ -80,10 +80,20 @@ class StationListAPIView(ListAPIView):
 
 	def get_queryset(self,*args,**kwargs):
 		queryset_list=Station.objects.all()
-		query = self.request.GET.get("family")
-		if query:
-			queryset_list = queryset_list.filter(
-					Q(family__name=query)&
-					Q(critical=True)
-					).exclude(family__isnull=True).distinct()
+		family = self.request.GET.get("family")
+		station = self.request.GET.get("station")
+
+		if family:
+			if station:
+				queryset_list = queryset_list.filter(
+						Q(family__name=family)&
+						Q(station=station)&
+						Q(critical=True)
+						).exclude(family__isnull=True).distinct()
+			else :
+				queryset_list = queryset_list.filter(
+						Q(family__name=family)&
+						Q(critical=True)
+						).exclude(family__isnull=True).distinct()
+
 		return queryset_list

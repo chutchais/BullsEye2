@@ -26,6 +26,12 @@ angular.module('try').
               when("/distribute/:model", {
                 template: "<model-list></model-list>"
               }).
+              when("/distribute/:model/:station", {
+                template: "<model-list></model-list>"
+              }).
+              when("/distribute/:model/:station/:parameter", {
+                template: "<parameter-detail></parameter-detail>"
+              }).
               when("/about", {
                 template: "<blog-list></blog-list>"
               }).

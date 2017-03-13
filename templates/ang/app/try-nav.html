@@ -8,7 +8,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Fabrinet SPC Monitoring</a>
+      <a class="navbar-brand" href="#">Fabrinet SPC Monitoring : {{family}} </a> 
     </div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -21,11 +21,12 @@
             placeholder="Search"
             ng-model='searchQuery'
             uib-typeahead='item.description for item in items | filter:$viewValue | limitTo:50'
-            typeahead-on-select='selectItem($item, $model, $label)'
+            typeahead-on-select='selectParameter($item, $model, $label)'
             />
         </div>
         <button type="submit" class="btn btn-default">Submit</button>
       </form>
+
       
      
 <!--        <ul class="nav navbar-nav">
@@ -49,7 +50,7 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Model <span class="caret"></span></a>
           <ul class="dropdown-menu" ng-model="selectedFamily">
           
-              <li  ng-click="selectItem(family.name)" class="animate-repeat" ng-repeat='family in familys ' ng-value="family.name"><a href="#">{{ family.name }}</a></li>
+              <li  ng-click="selectFamily(family.name)" class="animate-repeat" ng-repeat='family in familys ' ng-value="family.name"><a href="#">{{ family.name }}</a></li>
            
           </ul>
         </li>

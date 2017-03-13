@@ -22,5 +22,6 @@ angular.module('try', [
     'parameter',
     //Internal
     'modelList',
+    'parameterDetail',
     'tryNav',
 ]);

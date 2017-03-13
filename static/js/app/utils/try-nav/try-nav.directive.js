@@ -29,12 +29,11 @@ angular.module('tryNav', [])
 		  
 		});
 
-	//console.log(src.query());
-
-	  $scope.customer = {
-	    name: 'Naomi',
-	    address: '1600 Amphitheatre'
-	  };
+        function ToSlash(item){
+                // var name=item.name;
+                var new_name = item.replace("/","-slash-")
+                return new_name;
+        }
 }])
 .directive('tryNav', function(Parameter,$cookies, $location) {
   return {
@@ -44,14 +43,26 @@ angular.module('tryNav', [])
             
             // scope.items = Parameter.get_lite({"family":"Acadia"})
             // console.log('requery');
-
-            scope.selectItem = function($family){
+            scope.selectFamily = function($family){
                 // console.log('tryNav directive :'+$family)
                 $location.path("/distribute/" + $family) // $item.slug was added after completion of content
-                scope.items = Parameter.get_lite({"family":$family,"critical":"True"})
-                console.log('requery parameter for ' + $family);
+                scope.items = Parameter.get({"family":$family,"critical":"True"})
+                scope.family= $family;
+                console.log('selectFamily : requery parameter for ' + $family);
                 // scope.searchQuery = ""
             }
+
+            scope.selectParameter = function($item, $model, $label){
+                var selectedParam = $item.name.replace("/","-slash-");
+                var selectedStation = $item.station.station;
+                //console.log($item)
+                $location.path("/distribute/" + scope.family + "/" + selectedStation +"/" + selectedParam) // $item.slug was added after completion of content
+                // scope.items = Parameter.get_lite({"family":$family,"critical":"True"})
+                // console.log('requery parameter for ' + selectedParam + selectedStation + scope.family );
+                scope.searchQuery = ""
+            }
+
+            
 
             // scope.seachItem = function(){
             //     console.log(scope.searchQuery)
