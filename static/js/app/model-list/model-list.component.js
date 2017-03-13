@@ -37,12 +37,14 @@ angular.module('modelList').
             }
 
             $scope.currStation = function (item) { 
-             //  if (item.color === 'red' || item.color === 'blue') {
-             //  return item;
-             // }
-                // console.log(item.name)
-                return item.name;
+                return item.station;
             };
+
+            $scope.ToSlash = function(item){
+                var name=item.name;
+                var new_name = name.replace("/","-slash-")
+                return new_name;
+            }
 
             // console.log($location.search())
             // var q = $location.search().q

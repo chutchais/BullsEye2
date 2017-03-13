@@ -1,16 +1,27 @@
-Family : {{ model }}
-<br>
+<!-- Family : {{ model }}
+<br> -->
 <!-- {{stations}} -->
 
 <div ng-repeat="station in stations | orderBy: 'ordering'">
-  <h2>{{station.name}}</h2>
-      <div ng-repeat="parameter in parameters | filter:currStation(station) | orderBy: 'ordering' | limitTo : 5 ">
-        {{parameter.name}} -- {{ parameter.description}}
+
+    <div class="page-header">
+      <h2>{{station.name}}</h2>
+    </div>
+      <div class="row">
+        <div class="col-sm-6 col-md-4" ng-repeat="parameter in parameters | filter:currStation(station) | orderBy: 'ordering' | limitTo : 6 ">
+          <div class="thumbnail">
+          <h3><small>{{ parameter.description}}</small></h3>
+            <img src="dashboard/graph/boxplot/{{model}}/{{station.station}}/{{ToSlash(parameter)}}/7day/" alt="...">
+            <!-- <div class="caption">
+              
+              <p>...</p>
+              <p><a href="#" class="btn btn-primary" role="button">Button</a> <a href="#" class="btn btn-default" role="button">Button</a></p>
+            </div> -->
+          </div>
+        </div>
       </div>
+
 </div>
-<br>
-
-
 
 <!-- //| filter: { color: 'red' } -->
 <!-- 

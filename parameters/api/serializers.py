@@ -96,3 +96,30 @@ class ParameterListSerializer (ModelSerializer):
 		]
 
 
+class ParameterLiteListSerializer (ModelSerializer):
+
+	# delete_url=HyperlinkedIdentityField(
+	# 	view_name='posts-api:delete',
+	# 	lookup_field='slug'
+	# 	)
+	# print ("PostListSerializer...start")
+	# url=post_detail_url
+	# station = StationListSerializer(read_only=True)#SerializerMethodField()
+	#UserDetailSerializer(read_only=True)#
+	class Meta:
+		model = Parameter
+		fields =[
+			'name',
+			'description',
+			# 'units',
+			# 'created_date',
+			# 'modified_date',
+			# 'user',
+			'activated',
+			'critical',
+			'ordering',
+			'attribute',
+			'station'
+		]
+
+

@@ -42,12 +42,14 @@ angular.module('tryNav', [])
     templateUrl: '/api/templates/try-nav.html',
     link: function (scope, element, attr) { 
             
-            scope.items = Parameter.get({"family":"Acadia","critical":"False"})
-            console.log('requery');
+            // scope.items = Parameter.get_lite({"family":"Acadia"})
+            // console.log('requery');
 
             scope.selectItem = function($family){
                 // console.log('tryNav directive :'+$family)
                 $location.path("/distribute/" + $family) // $item.slug was added after completion of content
+                scope.items = Parameter.get_lite({"family":$family,"critical":"True"})
+                console.log('requery parameter for ' + $family);
                 // scope.searchQuery = ""
             }
 
