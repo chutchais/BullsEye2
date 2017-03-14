@@ -8,9 +8,11 @@ angular.module('parameterDetail').
             var family = $routeParams.model
             var station = $routeParams.station
             var parameter = $routeParams.parameter
+            var range = $routeParams.range
             $scope.family = family
             $scope.station = station
             $scope.parameter = parameter
+            $scope.range = '7day'
 
             $scope.ToSlash = function(item){
                 // var name=item.name;
@@ -28,111 +30,35 @@ angular.module('parameterDetail').
             $scope.replaceStr = function(x) {
                    return x.replace("-slash-","/")
              };
-            // console.log(parameter)
-            // console.log(Station)
-
-            // if (family){
-            //       Station.get({"family":family},function(stations) {
-            //         //do something with todos
-            //         $scope.stations = stations
-            //         angular.forEach(stations, function(station) {
-            //            if (true){
-            //             // console.log(station.family);
-            //               }
-            //         });
-            //       });
-
-            //       Parameter.get({"family":family,"critical":"True"},function(parameters) {
-            //         //do something with todos
-            //         $scope.parameters = parameters
-            //         angular.forEach(parameters, function(parameter) {
-            //            if (true){
-            //              // console.log(parameter.description);
-            //               }
-            //         });
-            //       });
 
 
-            // }
+             $scope.dateClick = function (active) { 
+                console.log(active.currentTarget.value);
+                $scope.range = active.currentTarget.value
+            };
 
-            // $scope.currStation = function (item) { 
-            //     return item.station;
-            // };
 
-            // $scope.ToSlash = function(item){
-            //     var name=item.name;
-            //     var new_name = name.replace("/","-slash-")
-            //     return new_name;
-            // }
+             $scope.getButtonClass = function(range){
+                var x = (range === $scope.range);
+                // console.log(x)
+                if (x){
+                    return "btn btn-primary"
+                }
+                else {
+                    return "btn btn-default"
+                }
+            }
 
-            // console.log($location.search())
-            // var q = $location.search().q
-            // console.log(q)
-            // if (q) {
-            //     $scope.query = q
-            //     $scope.didPerformSearch = true;
-            // }
-
-            // $scope.order = '-publish'
-            // $scope.goToItem = function(post){
-            //     $rootScope.$apply(function(){
-            //         $location.path("/blog/" + post.id )
-            //     })
-            // }
-
-            // $scope.changeCols = function(number){
-            //     if (angular.isNumber(number)){
-            //         $scope.numCols = number
-            //     } else {
-            //         $scope.numCols = 2
-            //     }
-            //     setupCol($scope.items, $scope.numCols)
-            // }
-
-            // $scope.loadingQuery = false
-            // $scope.$watch(function(){
-            //     // console.log($scope.query)
-            //     if($scope.query) {
-            //         $scope.loadingQuery = true
-            //         $scope.cssClass = 'col-sm-12'
-            //         if ($scope.query != q) {
-            //             $scope.didPerformSearch = false;
-            //         }
-            //     } else {
-            //         if ($scope.loadingQuery) {
-            //             setupCol($scope.items, 2)
-            //             $scope.loadingQuery = false
-            //         }
-                     
-            //     }
-
-            // })
-
-            // function setupCol(data, number){
-            //     if (angular.isNumber(number)){
-            //         $scope.numCols = number
-            //     } else {
-            //         $scope.numCols = 2
-            //     }
-            //     $scope.cssClass = 'col-sm-' + (12/$scope.numCols)
-            //     $scope.items = data
-            //     $scope.colItems = chunkArrayInGroups(data, $scope.numCols)
-            // }
-
-            // Post.query(function(data){
-            //         setupCol(data, 2)
-            //     }, function(errorData){
-
-            // });
-
-            // function chunkArrayInGroups(array, unit) {
-            //     var results = [],
-            //     length = Math.ceil(array.length / unit);
-            //     for (var i = 0; i < length; i++) {
-            //         results.push(array.slice(i * unit, (i + 1) * unit));
-            //     }
-            //     return results;
-            // }
-
+            $scope.getImageSrc = function(parameter,range){
+                // $scope.station = station
+                var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+                var hist_scr = "dashboard/graph/histogram/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+                // console.log(new_scr)
+                return {
+                    "boxplot":boxplot_scr,
+                    "histogram" : hist_scr
+                }
+            }
+          
         }]
     });

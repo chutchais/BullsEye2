@@ -10,13 +10,17 @@ angular.module('modelList').
         function(Station,Parameter,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
             var family = $routeParams.model
             var station = $routeParams.station
+            var range = $routeParams.range
             $scope.model=family
+            $scope.showDateRange=false
+            $scope.range = '7day'
              
 
             if (family){
                 var station_kwrg={"family":family};
                 if (station) {
                     station_kwrg={"family":family,"station" : station}
+                    $scope.showDateRange=true
                 }
 
                   Station.get(station_kwrg,function(stations) {
@@ -31,6 +35,7 @@ angular.module('modelList').
                 var param_kwarg = {"family":family,"critical":"True"};
                 if (station){
                     param_kwarg={"family":family,"station":station,"critical":"True"};
+                    $scope.showDateRange=true
                     }
                     
                   Parameter.get(param_kwarg,function(parameters) {
@@ -56,74 +61,36 @@ angular.module('modelList').
                 return new_name;
             }
 
-            // console.log($location.search())
-            // var q = $location.search().q
-            // console.log(q)
-            // if (q) {
-            //     $scope.query = q
-            //     $scope.didPerformSearch = true;
-            // }
+            $scope.$watch('range',function(){
+                // console.log('range change')
+            });
 
-            // $scope.order = '-publish'
-            // $scope.goToItem = function(post){
-            //     $rootScope.$apply(function(){
-            //         $location.path("/blog/" + post.id )
-            //     })
-            // }
+            $scope.dateClick = function (active) { 
+                console.log(active.currentTarget.value);
+                $scope.range = active.currentTarget.value
+            };
 
-            // $scope.changeCols = function(number){
-            //     if (angular.isNumber(number)){
-            //         $scope.numCols = number
-            //     } else {
-            //         $scope.numCols = 2
-            //     }
-            //     setupCol($scope.items, $scope.numCols)
-            // }
+            $scope.getImageSrc = function(station,parameter,range){
+                $scope.staton = station
+                var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+                var hist_scr = "dashboard/graph/histogram/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+                // console.log(new_scr)
+                return {
+                    "boxplot":boxplot_scr,
+                    "histogram" : hist_scr
+                }
+            }
 
-            // $scope.loadingQuery = false
-            // $scope.$watch(function(){
-            //     // console.log($scope.query)
-            //     if($scope.query) {
-            //         $scope.loadingQuery = true
-            //         $scope.cssClass = 'col-sm-12'
-            //         if ($scope.query != q) {
-            //             $scope.didPerformSearch = false;
-            //         }
-            //     } else {
-            //         if ($scope.loadingQuery) {
-            //             setupCol($scope.items, 2)
-            //             $scope.loadingQuery = false
-            //         }
-                     
-            //     }
-
-            // })
-
-            // function setupCol(data, number){
-            //     if (angular.isNumber(number)){
-            //         $scope.numCols = number
-            //     } else {
-            //         $scope.numCols = 2
-            //     }
-            //     $scope.cssClass = 'col-sm-' + (12/$scope.numCols)
-            //     $scope.items = data
-            //     $scope.colItems = chunkArrayInGroups(data, $scope.numCols)
-            // }
-
-            // Post.query(function(data){
-            //         setupCol(data, 2)
-            //     }, function(errorData){
-
-            // });
-
-            // function chunkArrayInGroups(array, unit) {
-            //     var results = [],
-            //     length = Math.ceil(array.length / unit);
-            //     for (var i = 0; i < length; i++) {
-            //         results.push(array.slice(i * unit, (i + 1) * unit));
-            //     }
-            //     return results;
-            // }
+            $scope.getButtonClass = function(range){
+                var x = (range === $scope.range);
+                // console.log(x)
+                if (x){
+                    return "btn btn-primary"
+                }
+                else {
+                    return "btn btn-default"
+                }
+            }
 
         }]
     });
