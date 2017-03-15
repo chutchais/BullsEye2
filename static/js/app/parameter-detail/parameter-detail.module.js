@@ -1,3 +1,3 @@
 'use strict';
 
-angular.module('parameterDetail', []);
+angular.module('parameterDetail', ['parameter']);

@@ -1,14 +1,55 @@
 <h3>{{replaceStr(parameter)}}</h3>
 
-<!-- Date Range -->
-      <div class="btn-group" role="group" aria-label="..." >
-        <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getButtonClass('7day') }}">7 day</button>
-        <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getButtonClass('14day') }}">14 day</button>
-        <button type="button" ng-model="dateRange" value="6week" ng-click="dateClick($event)" class="{{ getButtonClass('6week') }}">6 week</button>
-        <button type="button" ng-model="dateRange" value="4month" ng-click="dateClick($event)" class="{{ getButtonClass('4month') }}">4 month</button>
-        <button type="button" ng-model="dateRange" value="6month" ng-click="dateClick($event)" class="{{ getButtonClass('6month') }}">6 month</button>
-      </div>
-<!-- End Date Range -->
+<div class="row">
+
+		<div id="title" class="col-md-6 col-sm-6">
+		<!-- Date Range -->
+		      <div class="btn-group" role="group" aria-label="..." >
+		        <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getButtonClass('7day') }}">7 day</button>
+		        <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getButtonClass('14day') }}">14 day</button>
+		        <button type="button" ng-model="dateRange" value="6week" ng-click="dateClick($event)" class="{{ getButtonClass('6week') }}">6 week</button>
+		        <button type="button" ng-model="dateRange" value="4month" ng-click="dateClick($event)" class="{{ getButtonClass('4month') }}">4 month</button>
+		        <button type="button" ng-model="dateRange" value="6month" ng-click="dateClick($event)" class="{{ getButtonClass('6month') }}">6 month</button>
+		      </div>
+		<!-- End Date Range -->
+		</div>
+
+		<div id="title" class="col-md-6 col-sm-6">
+			
+			    <div class="input-group">
+			      <input 
+		            type="text" 
+		            class="form-control" 
+		            placeholder="Search for parameter"
+		            ng-model='searchQuery'
+		            uib-typeahead='item.description for item in parameters | filter:$viewValue | limitTo:20'
+		            typeahead-on-select='selectParameter($item, $model, $label)'
+		            />
+			      <span class="input-group-btn">
+			        <button class="btn btn-default" type="button">Go!</button>
+			      </span>
+			    </div><!-- /input-group -->
+
+<!-- 
+			        <div class="dropdown">
+					  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+					    Select new Parameter..
+					    <span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+					    <li><a href="#">Action</a></li>
+					    <li><a href="#">Another action</a></li>
+					    <li><a href="#">Something else here</a></li>
+					    <li role="separator" class="divider"></li>
+					    <li><a href="#">Separated link</a></li>
+					    <li  ng-click="selectFamily(family.name)" class="animate-repeat" ng-repeat='parameter in parameters' ng-value="parameter.name"><a href="#">{{ parameter.description }}</a></li>
+					  </ul>
+					</div> -->
+
+		        
+		</div>
+		<!-- </div> -->
+</div>
 
 <div class="row">
 	<div class="col-sm-6 col-md-6">
@@ -22,7 +63,7 @@
 	  <div class="thumbnail">
 	  <h3>Histrogram</h3>
 	    <img ng-src="{{ getImageSrc(ToSlash(parameter),range).histogram }}" alt="...">
-	  </div>
+	  </div> 
 	</div>
 
 </div>

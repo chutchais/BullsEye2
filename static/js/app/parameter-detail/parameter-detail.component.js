@@ -3,8 +3,8 @@
 angular.module('parameterDetail').
     component('parameterDetail', {
         templateUrl: '/api/templates/parameter-detail.html',
-        controller:['$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
-        function($cookies, $location, $routeParams, $rootScope, $scope,$resource){
+        controller:['Parameter','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
+        function(Parameter,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
             var family = $routeParams.model
             var station = $routeParams.station
             var parameter = $routeParams.parameter
@@ -13,6 +13,7 @@ angular.module('parameterDetail').
             $scope.station = station
             $scope.parameter = parameter
             $scope.range = '7day'
+            // $scope.searchQuery=parameter
 
             $scope.ToSlash = function(item){
                 // var name=item.name;
@@ -49,6 +50,19 @@ angular.module('parameterDetail').
                 }
             }
 
+            $scope.selectParameter = function($item, $model, $label){
+                var selectedParam = $item.name.replace("/","-slash-");
+                var selectedStation = $item.station.station;
+                $scope.station = selectedStation
+                $scope.parameter = selectedParam
+                $scope.searchQuery=""
+                // console.log($item)
+                // $location.path("/distribute/" + scope.family + "/" + selectedStation +"/" + selectedParam) // $item.slug was added after completion of content
+                // scope.items = Parameter.get_lite({"family":$family,"critical":"True"})
+                // console.log('requery parameter for ' + selectedParam + selectedStation + scope.family );
+                // scope.searchQuery = ""
+            }
+
             $scope.getImageSrc = function(parameter,range){
                 // $scope.station = station
                 var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
@@ -59,6 +73,20 @@ angular.module('parameterDetail').
                     "histogram" : hist_scr
                 }
             }
+
+            if (station && family){
+                  var param_kwarg={"family":family,"station":station};
+                                       
+                  Parameter.get(param_kwarg,function(parameters) {
+                    //do something with todos
+                    $scope.parameters = parameters
+                    angular.forEach(parameters, function(parameter) {
+                       if (true){
+                          // console.log(parameter.description);
+                          }
+                    });
+                  });
+            }//End if
           
         }]
     });

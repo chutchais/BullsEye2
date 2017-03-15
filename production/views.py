@@ -1396,6 +1396,8 @@ def graph_histogram(request,family,station,
     Cpu = (limit_max-means)/(3*sigma)
     Cpk = Cpl if Cpl < Cpu else Cpl
     ax.set_ylabel('Probability')
+    ax.set_xlabel('Distribution')
+
     ax.set_title(r'%s ($n$=%s)' % (param_desc,total_sample),fontsize=16)
     #ax.set_xlabel('Cp: %0.2f  / Cpk: %0.2f' % (Cp,Cpk))
     ax.text(0, 0.98, ('$\mu = %0.2f $, $\sigma=%0.2f$')% (means,stddev),
@@ -1412,6 +1414,11 @@ def graph_histogram(request,family,station,
         transform=ax.transAxes,
         color='green', fontsize=12)
 
+
+    tickFontSize=14
+    # ax.set_xticklabels(['%s\n $%d$'%(l, len(x)) for l, x in zip(date_labels,date_x_data)],fontsize=tickFontSize)
+    zed = [tick.label.set_fontsize(tickFontSize) for tick in ax.yaxis.get_major_ticks()]
+    zed = [tick.label.set_fontsize(tickFontSize) for tick in ax.xaxis.get_major_ticks()]
 
     # draw a default vline at x=1 that spans the yrange
     # l = ax.axvline(x=(means-(3*stddev)))

@@ -81,16 +81,20 @@ class ParameterListAPIView(ListAPIView):
 
 	def get_queryset(self,*args,**kwargs):
 		queryset_list=None
-		default_critical=False
+		# default_critical="False"
 		station = self.request.GET.get("station")
 		family = self.request.GET.get("family")
-		critical = self.request.GET.get("critical",default_critical)
+		critical = self.request.GET.get("critical")
+		if critical:
+			kwargs_param={'station__station' :station,'station__family__name':family,'critical': critical}
+		else:
+			kwargs_param={'station__station' :station,'station__family__name':family}
+
 		if station and family:
-			queryset_list=Parameter.objects.filter(station__station =station,
-				station__family__name=family,critical=critical).order_by('name')
+			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('-critical','name')
 		elif family:
 			queryset_list=Parameter.objects.filter(station__family__name=family,
-				critical=critical).order_by('name')
+				critical=critical).order_by('-critical','name')
 		# else :
 		# 	queryset_list=Parameter.objects.filter(critical=critical)
 		
