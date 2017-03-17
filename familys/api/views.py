@@ -78,8 +78,12 @@ class FamilyListAPIView(ListAPIView):
 	# pagination_class = StationPageNumberPagination
 
 	def get_queryset(self,*args,**kwargs):
-		queryset_list=Family.objects.filter(critical=True).order_by('ordering')
-		query = self.request.GET.get("q")
+		spc_control = self.request.GET.get("spc")
+		if spc_control :
+			queryset_list=Family.objects.filter(spc_control=True).order_by('spc_ordering')
+		else:
+			queryset_list=Family.objects.filter(critical=True).order_by('ordering')
+		# query = self.request.GET.get("q")
 		# if query:
 		# 	queryset_list = queryset_list.filter(
 		# 			Q(station__icontains=query)|

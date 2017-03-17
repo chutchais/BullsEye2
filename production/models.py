@@ -40,6 +40,8 @@ class Family(models.Model):
 	user = models.ForeignKey('auth.User',blank=True,null=True)
 	critical = models.BooleanField(verbose_name ='Critical Family?',default=False)
 	ordering = models.IntegerField(default=1)
+	spc_control = models.BooleanField(verbose_name ='SPC Control?',default=False)
+	spc_ordering = models.IntegerField(default=100)
 
 	def __str__(self):
 		return self.name
@@ -78,6 +80,8 @@ class Station(models.Model):
 	user = models.ForeignKey('auth.User',blank=True,null=True)
 	critical = models.BooleanField(verbose_name ='Critical station?',default=False)
 	ordering = models.IntegerField(default=1)
+	spc_control = models.BooleanField(verbose_name ='SPC Control?',default=False)
+	spc_ordering = models.IntegerField(default=100)
 	
 	def __str__(self):
 		return ('%s : %s : %s' % (self.family,self.station,self.name))
@@ -201,6 +205,11 @@ class Parameter(models.Model):
 	ordering = models.IntegerField(default=1)
 	attribute = models.ForeignKey('ParameterAttribute' ,related_name='attribute_list',blank=True,null=True)
 	station = models.ForeignKey('Station' ,related_name='parameter_used',blank=True,null=True)
+	spc_control = models.BooleanField(verbose_name ='SPC Control?',default=False)
+	spc_ordering = models.IntegerField(default=100)
+	lower_spec_limit = models.FloatField(verbose_name ='Lower Spec Limit',null=True, blank=True)
+	upper_spec_limit = models.FloatField(verbose_name ='Upper Spec Limit',null=True, blank=True)
+
 	
 	def __str__(self):
 		return ("%s" % (self.description))
@@ -337,3 +346,33 @@ class ComponentsTracking(models.Model):
 
 	def __str__(self):
 		return ("%s" % (self.rd))
+
+class Tester(models.Model):
+	name = models.CharField(max_length=50)
+	slot = models.CharField(max_length=10)
+	station = models.ForeignKey('Station' ,related_name='tester_list')
+	created_date = models.DateTimeField(auto_now_add=True)
+	modified_date = models.DateTimeField(blank=True, null=True,auto_now=True)
+	user = models.ForeignKey('auth.User',blank=True,null=True)
+	critical = models.BooleanField(verbose_name ='Critical station?',default=False)
+	ordering = models.IntegerField(default=1)
+	spc_control = models.BooleanField(verbose_name ='SPC Control?',default=False)
+	spc_ordering = models.IntegerField(default=100)
+
+class TesterParameterLimit(models.Model):
+	tester = models.ForeignKey('Tester' ,related_name='limittester_list')
+	parameter = models.ForeignKey('Parameter' ,related_name='limitparam_list')
+	cl = models.FloatField(null=True, blank=True)
+	lcl = models.FloatField(null=True, blank=True)
+	ucl = models.FloatField(null=True, blank=True)
+	lcl1s = models.FloatField(null=True, blank=True)
+	ucl1s = models.FloatField(null=True, blank=True)
+	lcl2s = models.FloatField(null=True, blank=True)
+	ucl2s = models.FloatField(null=True, blank=True)
+	created_date = models.DateTimeField(auto_now_add=True)
+	modified_date = models.DateTimeField(blank=True, null=True,auto_now=True)
+	user = models.ForeignKey('auth.User',blank=True,null=True)
+
+
+
+

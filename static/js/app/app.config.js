@@ -32,6 +32,12 @@ angular.module('try').
               when("/distribute/:model/:station/:parameter", {
                 template: "<parameter-detail></parameter-detail>"
               }).
+              when("/spc", {
+                templateUrl: "/api/templates/about.html"
+              }).
+              when("/spc/:model", {
+                template: "<spc-station-list></spc-station-list>"
+              }).
               when("/about", {
                 template: "<blog-list></blog-list>"
               }).

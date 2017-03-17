@@ -39,12 +39,13 @@ admin.site.register(Bom,BomAdmin)
 
 class StationAdmin(admin.ModelAdmin):
     search_fields = ['station','family__name']
-    list_filter = ['process','name','family__name','first_process','last_process','critical']
-    list_display = ('station','name','family','process','first_process','last_process','description','critical','ordering')
+    list_filter = ['process','family__name','first_process','last_process','critical','spc_control']
+    list_display = ('station','name','family','process','first_process','last_process',
+        'description','critical','ordering','spc_control','spc_ordering')
     empty_value_display = ''
     fieldsets = [
         (None,               {'fields': ['station','name','family','process','first_process',
-            'last_process','description','critical','ordering']}),
+            'last_process','description','critical','ordering','spc_control','spc_ordering']}),
     ]
 
     #form = StationModelForm
@@ -79,9 +80,9 @@ admin.site.register(Routing,RoutingAdmin)
 class ProductAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_filter = ['family','model','customer_model']
-    list_display = ('name','description','model','rev','family','customer_model','customer_rev')
+    list_display = ('name','description','model','rev','family','customer_model','customer_rev','group')
     fieldsets = [
-        (None,               {'fields': ['name','description','model','rev','family','customer_model','customer_rev','bom']}),
+        (None,               {'fields': ['name','description','model','rev','family','customer_model','customer_rev','group','bom']}),
     ]
 
 admin.site.register(Product,ProductAdmin)
@@ -133,21 +134,22 @@ admin.site.register(Performing,PerformingAdmin)
 class FamilyAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_filter = ['name','critical']
-    list_display = ('name','description','critical','created_date','modified_date')
+    list_display = ('name','description','critical','spc_control','spc_ordering','created_date','modified_date')
     fieldsets = [
-        (None,               {'fields': ['name','description','critical']}),
+        (None,               {'fields': ['name','description','critical','spc_control','spc_ordering']}),
     ]
     
 admin.site.register(Family,FamilyAdmin)
 
 
 class ParameterAdmin(admin.ModelAdmin):
-    search_fields = ['name','group','description']
+    search_fields = ['name','description']
     list_filter = ['critical','station__family','station__station','group','units','activated']
-    list_display = ('name','units','group','station','attribute','description','activated','created_date','modified_date',
-        'critical','ordering')
+    list_display = ('name','description','units','station','activated',
+        'critical','ordering','spc_control','spc_ordering','lower_spec_limit','upper_spec_limit')
     fieldsets = [
-        (None,               {'fields': ['name','units','group','station','description','attribute','activated','critical','ordering']}),
+        (None,               {'fields': ['name','units','group','station','description',
+            'attribute','activated','critical','ordering','spc_control','spc_ordering','lower_spec_limit','upper_spec_limit']}),
     ]
     
 admin.site.register(Parameter,ParameterAdmin)

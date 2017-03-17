@@ -2490,3 +2490,246 @@ def month_magic(dt, d_years=0, d_months=0):
     a, m = divmod(m-1, 12)
     last_day= date(y+a, m+1, 1) + timedelta(-1)
     return (first_day,last_day)
+
+
+def graph_x_bar(request):
+    import django
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    import matplotlib.pyplot as plt
+    from matplotlib.figure import Figure
+    from matplotlib import pyplot as plt
+    import numpy as np
+    adjustprops = dict(left=0.1, bottom=0.1, right=0.97, top=0.93, wspace=1, hspace=1)
+    # param_desc=Parameter.objects.filter(name=date_range)
+    # left, width = .25, .5
+    # bottom, height = .25, .5
+    # right = left + width
+    # top = bottom + height
+    # fig = plt.Figure()
+    # fig.subplots_adjust(**adjustprops)
+    
+    fig = plt.Figure()
+    fig.subplots_adjust(**adjustprops)
+    fig.autofmt_xdate()
+    ax = fig.add_subplot(111) #211 ,111
+
+    fig.patch.set_facecolor('white')
+    # ay = fig.add_subplot(212)
+    # fig.tight_layout()
+    # fig.tight_layout(pad=2, w_pad=0.5, h_pad=4.0)
+    #get limit
+    # from spc.models import ParamSetting
+    # ps = ParamSetting.objects.get(tester_name=tester_name,param_name=param_name,
+    #                              model=model,control_side=side)
+    titletxt= 'IR chart : %s - %s (%s)' % ('Tester 1','Param1','Top')
+
+    # pd = PerformingDetail.objects.filter(param_name=param_name,
+    #                                      perform_id__tester_name=tester_name).order_by('-datetime')[:50]
+
+    n = 100 #pd.count()
+    minvalue_list = np.linspace(-6, 6, n) #pd.values_list('min_value', flat=True)[::-1]
+    maxvalue_list = np.linspace(-6, 6, n) #pd.values_list('max_value', flat=True)[::-1]
+    date_list = np.arange(1,  n, step=1, dtype=None)#pd.values_list('datetime', flat=True)[::-1]
+
+
+
+    # n = pd.count()
+    cl = np.empty(n)
+    ucl = np.empty(n)
+    ucl1s = np.empty(n)
+    ucl2s = np.empty(n)
+    lcl = np.empty(n)
+    lcl1s = np.empty(n)
+    lcl2s = np.empty(n)
+
+    line_cl=0
+    line_ucl=6
+    line_lcl=-6
+    line_ucl1s=2
+    line_lcl1s=-2
+    line_ucl2s=4
+    line_lcl2s=-4
+
+    cl.fill(line_cl)
+    ucl.fill(line_ucl)
+    lcl.fill(line_lcl)
+    ucl1s.fill(line_ucl1s)
+    lcl1s.fill(line_lcl1s)
+    ucl2s.fill(line_ucl2s)
+    lcl2s.fill(line_lcl2s)
+
+    #x=np.arange(1,n+1)
+    #ax.set_xlim(1, 50)
+    dim = np.arange(0, n+1)
+    x=np.arange(0,n)
+    #x=date_list
+    #y = np.full(n, 1)
+    #y = np.full(n, ps.lcl*0.6)
+    side='MAX'
+    y = minvalue_list if side == 'MIN' else maxvalue_list
+
+    # box_plot(ay,y ,'')
+
+    #Center Line (CL)
+    pos_limit=0
+    ax.plot(x,cl,linestyle='-',color='black', linewidth=2)
+    ax.text(pos_limit, line_cl,'{0:.3}'.format(float(line_cl)), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'gray', 'alpha':0.5, 'pad':1})
+
+    #1Sigma Upper line (1ucl)
+    
+    ax.plot(x,ucl1s,linestyle='--',color='green', linewidth=1)
+    ax.text(pos_limit, line_ucl1s,float(line_ucl1s).__format__('0.3'), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'green', 'alpha':0.5, 'pad':1})
+
+    #1Sigma Lower line (1lcl)
+    
+    ax.plot(x,lcl1s,linestyle='--',color='green', linewidth=1)
+    ax.text(pos_limit, line_lcl1s,float(line_lcl1s).__format__('0.3'), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'green', 'alpha':0.5, 'pad':1})
+
+    #2Sigma Upper line (2ucl)
+    ax.plot(x,ucl2s,linestyle='--',color='orange', linewidth=1)
+    ax.text(pos_limit, line_ucl2s,float(line_ucl2s).__format__('0.3'), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'orange', 'alpha':0.5, 'pad':1})
+
+    #2Sigma Upper line (2lcl)
+    ax.plot(x,lcl2s,linestyle='--',color='orange', linewidth=1)
+    ax.text(pos_limit, line_lcl2s,float(line_lcl2s).__format__('0.3'), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'orange', 'alpha':0.5, 'pad':1})
+
+    #3Sigma Upper line (3ucl)
+    ax.plot(x,ucl,linestyle='-',color='red', linewidth=2)
+    ax.text(pos_limit, line_ucl,float(line_ucl).__format__('0.3'), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+
+    #3Sigma lower line (3lcl)
+    ax.plot(x,lcl,linestyle='-',color='red', linewidth=2)
+    ax.text(pos_limit, line_lcl,float(line_lcl).__format__('0.3'), ha='left',
+            verticalalignment='bottom',color='black', wrap=True,
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+
+    
+    # from django.utils import timezone
+    # import pandas as pd
+    from datetime import timedelta, date
+    import datetime
+    # start_date = date(2017, 3, 1)
+    # end_date = date(2017, 3, 30)
+    # newdate = pd.date_range(start_date, end_date).tolist()
+    import datetime as DT
+    numdays= n
+    base = datetime.datetime.today()- timedelta(hours=n)
+    date_list = [base + datetime.timedelta(hours=x) for x in range(0, numdays)]
+    xlabels = [newdate.strftime('%d') if True else newdate for newdate in date_list]#'%b-%d'
+    #xlabels = [DT.datetime.strptime(newdate,"%Y-%m-%d") for newdate in date_list ]
+    # xlabels = [timezone.localtime(newdate, timezone.get_default_timezone()).strftime('%b-%d') if True else newdate for newdate in date_list]#'%b-%d'
+    
+    # print (x)
+    # print (xlabels)
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    majorLocator   = MultipleLocator(1)
+    majorFormatter = FormatStrFormatter('%d')
+    # minorLocator   = MultipleLocator(1)
+    # minorFormatter = FormatStrFormatter('%d')
+
+    ax.xaxis.set_major_locator(majorLocator)
+    ax.xaxis.set_major_formatter(majorFormatter)
+    # ax.xaxis.set_minor_locator(minorLocator)
+    # ax.xaxis.set_major_formatter(minorFormatter)
+    # ax.grid()
+    ind = np.arange(len(y))
+    ind = np.arange(0,  len(y), step=1, dtype=None)
+    print (ind)
+    k = []
+    for i in range(0,len(ind),1):
+        k.append(str(xlabels[i])[0:10])
+    
+    # print (k)
+    ax.plot(ind,y,'o-',lw=1)
+    # 'ax.grid()
+    ax.set_xticklabels(k, minor=False)
+
+    # To invisble Same tick'
+    prev_label=''
+    i=0
+    print ('Start to verify')
+    for label in ax.xaxis.get_ticklabels():
+        if prev_label == label.get_text() :
+            label.set_visible(False)
+        else:
+            print ('%s -->%s -- %s' % (i,prev_label,label.get_text()))
+            label.set_visible(True)
+        prev_label=label.get_text()
+        i=i+1
+
+
+
+        # print (label)
+        # label.set_visible(False)
+    # ax.set_xticks(xlabels, minor=False)
+    #fig.xticks(dim)
+    # fig.grid()
+    #ax.set_xticks(date_list)
+    # labels = ['0','a', 'b', 'c', 'd','e','f','g','h','i','j','k','l',
+    #           'm','n','o','p','q','r','s','t','u','v','w','x','y','z',
+    #           'a1', 'b2', 'c3', 'd4','e5','f6','g7','h8','i9','j10','k11','l12',
+    #           'm13','n14','o15','p16','q17','r18','s19','t20','u21','v22','w23','x24']
+    # labels=['0']+xlabels
+    # ax.set_xticklabels(labels, rotation=70,ha='right')
+
+    #for label in ax.get_xticklabels():
+    #    label.set_rotation('vertical')
+
+
+    #ax.plot(r.date, r.close)
+
+    # rotate and align the tick labels so they look better
+    #fig.autofmt_xdate()
+
+    # use a more precise date string for the x axis locations in the
+    # toolbar
+    #plt.title('fig.autofmt_xdate fixes the labels')
+
+    ax.set_title(titletxt)
+
+
+
+    #ax.set_xticks(date_list)
+
+    #ax.set_xticks(date_list)
+    #ax.set_xticklabels(xlable , rotation=45) #Working but need to fix format
+
+    #ax.set_xticklabels(date_list)
+    #ax.set_minor_formatter(FormatStrFormatter("%b"))
+    ax.set_ylim([(line_lcl+(line_lcl1s-line_cl)), (line_ucl+(line_ucl1s-line_cl))])
+
+
+    # ax.xaxis.grid(True,'major',linewidth=1)
+    # ax.tick_params(axis='x', pad=8)
+    #ax.xaxis.grid(True,'minor')
+    #fig.tight_layout()
+
+    #fig.autofmt_xdate()
+    # rotate and align the tick labels so they look better
+    #fig.autofmt_xdate()
+
+# use a more precise date string for the x axis locations in the
+# toolbar
+
+    #plt.title('fig.autofmt_xdate fixes the labels')
+    #ax.imshow(X, cmap=cm.jet)
+
+    fig.set_size_inches(10,4, forward=True)
+    #plt.savefig("image.png",bbox_inches='tight',dpi=100)
+    # fig.tight_layout()
+    canvas=FigureCanvas(fig)
+    response=django.http.HttpResponse(content_type='image/png')
+    canvas.print_png(response)
+    return response

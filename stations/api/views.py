@@ -82,18 +82,32 @@ class StationListAPIView(ListAPIView):
 		queryset_list=Station.objects.all()
 		family = self.request.GET.get("family")
 		station = self.request.GET.get("station")
+		spc_control = self.request.GET.get("spc")
 
 		if family:
 			if station:
-				queryset_list = queryset_list.filter(
+				if (spc_control):
+					queryset_list = queryset_list.filter(
 						Q(family__name=family)&
 						Q(station=station)&
-						Q(critical=True)
-						).exclude(family__isnull=True).distinct()
+						Q(spc_control=True)
+						).exclude(family__isnull=True).distinct().order_by('spc_ordering')
+				else:
+					queryset_list = queryset_list.filter(
+							Q(family__name=family)&
+							Q(station=station)&
+							Q(critical=True)
+							).exclude(family__isnull=True).distinct().order_by('ordering')
 			else :
-				queryset_list = queryset_list.filter(
-						Q(family__name=family)&
-						Q(critical=True)
-						).exclude(family__isnull=True).distinct()
+				if (spc_control):
+					queryset_list = queryset_list.filter(
+							Q(family__name=family)&
+							Q(spc_control=True)
+							).exclude(family__isnull=True).distinct().order_by('spc_ordering')
+				else:
+					queryset_list = queryset_list.filter(
+							Q(family__name=family)&
+							Q(critical=True)
+							).exclude(family__isnull=True).distinct().order_by('ordering')
 
 		return queryset_list

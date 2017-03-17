@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^test/$', views.test, name='test'),
     url(r'^spc/cpk/(?P<family>[-\w|\W\ ]+)/(?P<station>[-\w|\W\ ]+)/(?P<parameter>[-\w|\W\ ]+)/(?P<date_range>[-\w|\W\ ]+)/', 
         views.spc_cpk_station, name='spc_cpk_station'),
+    url(r'^spc/control/', views.graph_x_bar, name='graph_x_bar'),
     url(r'^spc/filter/get_family/', views.get_family, name='get_family'),
     url(r'^spc/filter/get_station/(?P<family>[-\w|\W\ ]+)/', views.get_station, name='get_station'),
     url(r'^spc/filter/get_product/(?P<family>[-\w|\W\ ]+)/', views.get_product, name='get_product'),

@@ -1,0 +1,30 @@
+<div ng-repeat="station in stations | orderBy: 'ordering'">
+
+
+      <a ng-show="from_path=='distribute'" href="distribute/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> 
+      <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a>
+
+
+<!-- Date Range -->
+<!--       <div class="btn-group" role="group" aria-label="..."  ng-show="{{showDateRange}}">
+        <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getButtonClass('7day') }}">7 day</button>
+        <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getButtonClass('14day') }}">14 day</button>
+        <button type="button" ng-model="dateRange" value="6week" ng-click="dateClick($event)" class="{{ getButtonClass('6week') }}">6 week</button>
+        <button type="button" ng-model="dateRange" value="4month" ng-click="dateClick($event)" class="{{ getButtonClass('4month') }}">4 month</button>
+        <button type="button" ng-model="dateRange" value="6month" ng-click="dateClick($event)" class="{{ getButtonClass('6month') }}">6 month</button>
+      </div> -->
+<!-- End Date Range -->
+
+
+ <!--      <div class="row">
+        <div class="col-sm-6 col-md-4" ng-repeat="parameter in parameters | filter:currStation(station) | orderBy: 'ordering' | limitTo : 6 ">
+          <div class="thumbnail">
+          <h3><a ng-href="distribute/{{model}}/{{station.station}}/{{ToSlash(parameter)}}/"><small>{{ parameter.description}}</small></a></h3>
+            <img ng-src="{{ getImageSrc(station.station,ToSlash(parameter),range).boxplot }}" alt="..." />
+          </div>
+        </div>
+      </div> -->
+
+</div>
+
+

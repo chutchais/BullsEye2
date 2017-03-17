@@ -18,7 +18,8 @@
           </div>
         </div>
       </nav> -->
-      <a class="navbar-brand" href="/">Fabrinet SPC Monitoring : {{family}} </a> 
+      <a class="navbar-brand" href="/" ng-show="from_path==''">Fabrinet SPC Monitoring : {{family}} </a> 
+      <a class="navbar-brand" href="/" ng-show="from_path=='spc'">Fabrinet SPC Control : {{family}} </a>
     </div>
     
     <!-- Collect the nav links, forms, and other content for toggling -->
