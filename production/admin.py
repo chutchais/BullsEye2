@@ -20,6 +20,7 @@ from .models import DocumentLogs
 from .models import DocumentRelated
 from .models import Components
 from .models import ComponentsTracking
+from .models import Tester
 
 
 class BomDetailsInline(admin.TabularInline):
@@ -192,4 +193,15 @@ class ComponentsAdmin(admin.ModelAdmin):
     inlines = [ComponentsTrackingInline]
     
 admin.site.register(Components,ComponentsAdmin)
+
+class TesterAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_filter = ['station__name','spc_control']
+    list_display = ('name','station','slot','spc_control','spc_ordering')
+    fieldsets = [
+        (None,               {'fields': ['name','station','slot','spc_control','spc_ordering']}),
+    ]
+    # inlines = [ComponentsTrackingInline]
+    
+admin.site.register(Tester,TesterAdmin)
 

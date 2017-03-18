@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^dashboard/', include('production.urls')),
     url(r'^api/parameter/', include('parameters.api.urls')),
     url(r'^api/station/', include('stations.api.urls')),
+    url(r'^api/tester/', include('tester.api.urls')),
     url(r'^api/family/', include('familys.api.urls')),
     url(r'^api/templates/(?P<item>[A-Za-z0-9\_\-\.\/]+)\.html$',  AngularTemplateView.as_view())
 ]
