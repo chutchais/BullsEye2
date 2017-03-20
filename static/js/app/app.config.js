@@ -38,6 +38,12 @@ angular.module('try').
               when("/spc/:model", {
                 template: "<spc-station-list></spc-station-list>"
               }).
+              when("/spc/:model/:station", {
+                template: "<spc-station-list></spc-station-list>"
+              }).
+              when("/spc/:model/:station/:tester", {
+                template: "<spc-station-detail></spc-station-detail>"
+              }).
               when("/about", {
                 template: "<blog-list></blog-list>"
               }).

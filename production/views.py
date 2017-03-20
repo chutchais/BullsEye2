@@ -1023,6 +1023,14 @@ def execute_transaction(xml):
         if result is None:
             result='PASS'#root.findtext('parameters/parameter[@code="1101"]')
 
+        #Added by Chutchai on March 20,2017
+        #To record test slot.
+        tester_slot_obj =root.findtext('parameters/parameter[@code="5111"]')
+        if tester_slot_obj is None:
+            tester_slot = '0' #default
+        else :
+            tester_slot = test_slot_obj
+
         
 
         #dispose code
@@ -1115,7 +1123,7 @@ def execute_transaction(xml):
         #8.2)Add Performing
         objPerforming = Performing.objects.create(sn_wo=objSnWoDetails,station=objStation,
             started_date=dateinTz,finished_date=dateoutTz,result=updateResult,user=objUser,
-            dispose_code=dispose_code,loop=objLoop+1,tester=tester)
+            dispose_code=dispose_code,loop=objLoop+1,tester=tester,slot=tester_slot)
 
         #9)PerformingDetails
         #Fits details (parameter)

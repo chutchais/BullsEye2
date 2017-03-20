@@ -1,3 +1,3 @@
 'use strict';
 
-angular.module('spcStationList', ['station','parameter']);
+angular.module('spcStationList', ['station','parameter','tester']);

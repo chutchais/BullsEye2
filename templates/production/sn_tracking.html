@@ -69,6 +69,7 @@
                           <th>Station Name</th>
                           <th>Loop</th>
                           <th>Tester</th>
+                          <th>Slot</th>
                           <th>Start</th>
                           <!-- <th>Stop</th> -->
                           <th>Result</th>
@@ -86,6 +87,7 @@
                           <td>{{item.station.name}}</td>
                           <td>{{item.loop}}</td>
                           <td><a href= "{% url 'unit_parameter_data' item.pk  %}" >{{item.tester}}</a></td>
+                          <td>{{item.slot}}</td>
                           <td>{{item.started_date}}</td>
                           <!-- <td>{{item.finished_date}}</td> -->
                           <td>{{item.result}}</td>

@@ -78,12 +78,30 @@ class TesterListAPIView(ListAPIView):
 	# pagination_class = StationPageNumberPagination
 
 	def get_queryset(self,*args,**kwargs):
-		# spc_control = self.request.GET.get("spc")
+		onlytester = self.request.GET.get("onlytester")
+		family = self.request.GET.get("family")
+		station = self.request.GET.get("station")
+		tester = self.request.GET.get("tester")
+		if onlytester:
+			queryset_list = Tester.objects.filter(
+					Q(spc_control=True) &
+					Q (station__family=family)
+					).distinct('name')
+		else:
+			kwarg={"spc_control":"True","station__family":family}
+			if tester :
+				kwarg={"spc_control":"True","station__family":family,"station__station":station,"name":tester}
+			queryset_list=Tester.objects.filter(**kwarg).order_by('name','station','spc_ordering')
+			# queryset_list=Tester.objects.filter(
+			# 	Q(spc_control=True),
+			# 	Q(station__family=family)
+			# 	).order_by('name','station','spc_ordering')
+
 		# if spc_control :
 		# 	queryset_list=Family.objects.filter(spc_control=True).order_by('spc_ordering')
 		# else:
 		# 	queryset_list=Family.objects.filter(critical=True).order_by('ordering')
-		queryset_list=Tester.objects.filter(spc_control=True).order_by('name','station','spc_ordering')
+		
 		# query = self.request.GET.get("q")
 		# if query:
 		# 	queryset_list = queryset_list.filter(

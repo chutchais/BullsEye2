@@ -202,6 +202,16 @@ class TesterAdmin(admin.ModelAdmin):
         (None,               {'fields': ['name','station','slot','spc_control','spc_ordering']}),
     ]
     # inlines = [ComponentsTrackingInline]
+    # def get_queryset(self, request):
+    # # def queryset(self, request): # For Django <1.6
+    #     qs = super(TesterAdmin, self).get_queryset(request)
+    #     # qs = super(CustomerAdmin, self).queryset(request) # For Django <1.6
+    #     qs = qs.order_by('station')
+    #     return qs
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "station":
+            kwargs["queryset"] = Station.objects.order_by('family','station')
+        return super(TesterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
     
 admin.site.register(Tester,TesterAdmin)
 

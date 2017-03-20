@@ -3,7 +3,31 @@
 
       <a ng-show="from_path=='distribute'" href="distribute/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> 
       <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a>
+      <div>
+      	<h2 ng-show="tester!=''">Tester : {{ tester }}</h2>
+      </div>
 
+		<!-- Date Range -->
+
+	By :
+		      <div class="btn-group" role="group" aria-label="..." >
+		        <button type="button" ng-model="dateRange" value="slot" ng-click="dateClick($event)" class="{{ getButtonClass('slot') }}">Slot</button>
+		        <button type="button" ng-model="dateRange" value="parameter" ng-click="dateClick($event)" class="{{ getButtonClass('parameter') }}">Parameter</button>
+		      </div>
+
+
+			  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    Please select {{ range }}
+			    <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu3">
+			    <li ng-if ="range=='slot'" ng-repeat="item in selectItems | orderBy: 'spc_ordering'"><a href="#">{{ item.slot }}</a></li>
+			    <li ng-if ="range=='parameter'" ng-repeat="item in selectItems | orderBy: 'spc_ordering'"><a href="#">{{ item.name }}</a></li>
+
+			  </ul>
+
+
+		<!-- End Date Range -->
 
 <!-- Date Range -->
 <!--       <div class="btn-group" role="group" aria-label="..."  ng-show="{{showDateRange}}">
@@ -16,22 +40,7 @@
 <!-- End Date Range -->
 
 
-      <div class="row">
-        <div class="col-sm-6 col-md-4" ng-repeat="tester in testers | filter:currStation(station) | orderBy: 'spc_ordering'">
-          <div class="thumbnail">
-          <h3><a ng-href="spc/{{model}}/{{station.station}}/{{tester.name}}/"><small>{{ tester.name }}</small></a></h3>
-            <!-- <img ng-src="{{ getImageSrc(station.station,ToSlash(parameter),range).boxplot }}" alt="..." /> -->
-            <hr>
-            3 parameters, 6 slots
-          </div>
-        </div>
-      </div> 
-
-      <!-- <div class="row">
-        <div class="col-sm-6 col-md-4" ng-repeat="tester in testers | filter:currStation(station) | orderBy: 'spc_ordering'">
-          {{ tester.name }}
-        </div>
-      </div> -->
+    
 
 
 </div>

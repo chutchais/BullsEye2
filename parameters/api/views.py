@@ -85,12 +85,18 @@ class ParameterListAPIView(ListAPIView):
 		station = self.request.GET.get("station")
 		family = self.request.GET.get("family")
 		critical = self.request.GET.get("critical")
+		spc_control = self.request.GET.get("spc_control")
+
 		if critical:
 			kwargs_param={'station__station' :station,'station__family__name':family,'critical': critical}
+		elif spc_control:
+			kwargs_param={'station__station' :station,'station__family__name':family,'spc_control': 'True'}
 		else:
 			kwargs_param={'station__station' :station,'station__family__name':family}
-
-		if station and family:
+		
+		if spc_control:
+			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('name')
+		elif station and family:
 			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('-critical','name')
 		elif family:
 			queryset_list=Parameter.objects.filter(station__family__name=family,

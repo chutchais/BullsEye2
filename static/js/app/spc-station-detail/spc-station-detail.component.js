@@ -3,22 +3,25 @@
 
 // .controller('Controller', ['$scope','$resource','Family',function($scope,$resource,Family) {
 
-angular.module('spcStationList').
-    component('spcStationList', {
-        templateUrl: '/api/templates/spc-station-list.html',
+angular.module('spcStationDetail').
+    component('spcStationDetail', {
+        templateUrl: '/api/templates/spc-station-detail.html',
         controller:['Tester','Station','Parameter','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
         function(Tester,Station,Parameter,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
             var family = $routeParams.model
             var station = $routeParams.station
+            var tester = $routeParams.tester
             var range = $routeParams.range
             $scope.model=family
+            $scope.tester = tester
             $scope.showDateRange=false
-            $scope.range = '7day'
+            $scope.range = 'slot'
+            console.log(tester)
 
             var from_path=location.pathname.replace("/","");
             from_path=from_path.split('/');
             $scope.from_path = from_path[0];
-            console.log(from_path[0] + ' On spc station')
+            // console.log(from_path[0] + ' On spc station')
              
 
             
@@ -36,7 +39,7 @@ angular.module('spcStationList').
                     if (from_path[0]=='spc'){
                         station_kwrg={"family":family,"station" : station,"spc":"true"}
                     }
-                    console.log(station_kwrg)
+                    // console.log(station_kwrg)
                     $scope.showDateRange=true
                 }
 
@@ -65,7 +68,7 @@ angular.module('spcStationList').
                     param_kwarg={"family":family,"station":station,"critical":"True"};
                     if (from_path[0]=='spc'){
                         param_kwarg={"family":family,"station" : station,"spc":"true"}
-                        console.log(station_kwrg)
+                        // console.log(station_kwrg)
                     }
                     $scope.showDateRange=true
                     }
@@ -98,8 +101,24 @@ angular.module('spcStationList').
             });
 
             $scope.dateClick = function (active) { 
-                console.log(active.currentTarget.value);
+                
                 $scope.range = active.currentTarget.value
+                // console.log(active.currentTarget.value)
+                if (active.currentTarget.value=='slot'){
+                    var item_kwrg={"family":family,"station":station,"tester":tester};
+                    Tester.get(item_kwrg,function(testers) {
+                        $scope.selectItems = testers
+                        // console.log(testers)
+                      });
+                    }
+
+                if (active.currentTarget.value=='parameter'){
+                    var item_kwrg={"family":family,"station":station,"spc_control":"True"};
+                    Parameter.get(item_kwrg,function(parameters) {
+                        $scope.selectItems = parameters
+                        // console.log(parameters)
+                      });
+                    }
             };
 
             $scope.getImageSrc = function(station,parameter,range){

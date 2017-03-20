@@ -7,7 +7,7 @@ from rest_framework.serializers import (
 # from accounts.api.serializers import UserDetailSerializer
 # from comments.api.serializers import CommentSerializer
 # from comments.models import Comment
-
+from stations.api.serializers import StationListSerializer
 
 from production.models import Tester
 
@@ -79,6 +79,7 @@ class TesterListSerializer (ModelSerializer):
 	# url=post_detail_url
 	# user = UserDetailSerializer(read_only=True)#SerializerMethodField()
 	#UserDetailSerializer(read_only=True)#
+	station = StationListSerializer(read_only=True)
 	class Meta:
 		model = Tester
 		fields =[

@@ -24,5 +24,6 @@ angular.module('try', [
     'modelList',
     'parameterDetail',
     'spcStationList',
+    'spcStationDetail',
     'tryNav',
 ]);
