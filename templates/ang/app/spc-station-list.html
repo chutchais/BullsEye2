@@ -2,18 +2,11 @@
 
 
       <a ng-show="from_path=='distribute'" href="distribute/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> 
-      <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a>
-
-
-<!-- Date Range -->
-<!--       <div class="btn-group" role="group" aria-label="..."  ng-show="{{showDateRange}}">
-        <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getButtonClass('7day') }}">7 day</button>
-        <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getButtonClass('14day') }}">14 day</button>
-        <button type="button" ng-model="dateRange" value="6week" ng-click="dateClick($event)" class="{{ getButtonClass('6week') }}">6 week</button>
-        <button type="button" ng-model="dateRange" value="4month" ng-click="dateClick($event)" class="{{ getButtonClass('4month') }}">4 month</button>
-        <button type="button" ng-model="dateRange" value="6month" ng-click="dateClick($event)" class="{{ getButtonClass('6month') }}">6 month</button>
-      </div> -->
-<!-- End Date Range -->
+      <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}
+        <small ng-show="showBack">
+        <a ng-show="from_path=='spc'" href="spc/{{model}}">Back</a>
+        </small>
+      </h2></a>
 
 
       <div class="row">
@@ -27,11 +20,6 @@
         </div>
       </div> 
 
-      <!-- <div class="row">
-        <div class="col-sm-6 col-md-4" ng-repeat="tester in testers | filter:currStation(station) | orderBy: 'spc_ordering'">
-          {{ tester.name }}
-        </div>
-      </div> -->
 
 
 </div>

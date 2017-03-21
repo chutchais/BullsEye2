@@ -1,14 +1,14 @@
 <div ng-repeat="station in stations | orderBy: 'ordering'">
 
 
-      <a ng-show="from_path=='distribute'" href="distribute/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> 
-      <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a>
+      <!-- <a ng-show="from_path=='distribute'" href="distribute/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> 
+      <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> -->
+      
       <div>
-      	<h2 ng-show="tester!=''">Tester : {{ tester }}</h2>
+      	<h2 ng-show="tester!=''">Tester : {{ tester }} 
+      	<small><a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}">Back</a></small></h2>
       </div>
-
 		<!-- Date Range -->
-
 	By :
 		      <div class="btn-group" role="group" aria-label="..." >
 		        <button type="button" ng-model="dateRange" value="slot" ng-click="dateClick($event)" class="{{ getButtonClass('slot') }}">Slot</button>
@@ -21,27 +21,38 @@
 			    <span class="caret"></span>
 			  </button>
 			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu3">
-			    <li ng-if ="range=='slot'" ng-repeat="item in selectItems | orderBy: 'spc_ordering'"><a href="#">{{ item.slot }}</a></li>
-			    <li ng-if ="range=='parameter'" ng-repeat="item in selectItems | orderBy: 'spc_ordering'"><a href="#">{{ item.name }}</a></li>
+			    <li ng-if ="range=='slot'" ng-repeat="item in slots | orderBy: 'spc_ordering'" ng-click="showItem(item.slot)"><a href="#">{{ item.slot }}</a></li>
+			    <li ng-if ="range=='parameter'" ng-repeat="item in parameters | orderBy: 'spc_ordering'" ng-click="showItem(item.name)"><a href="#">{{ item.name }}</a></li>
 
 			  </ul>
 
 
 		<!-- End Date Range -->
-
-<!-- Date Range -->
-<!--       <div class="btn-group" role="group" aria-label="..."  ng-show="{{showDateRange}}">
-        <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getButtonClass('7day') }}">7 day</button>
-        <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getButtonClass('14day') }}">14 day</button>
-        <button type="button" ng-model="dateRange" value="6week" ng-click="dateClick($event)" class="{{ getButtonClass('6week') }}">6 week</button>
-        <button type="button" ng-model="dateRange" value="4month" ng-click="dateClick($event)" class="{{ getButtonClass('4month') }}">4 month</button>
-        <button type="button" ng-model="dateRange" value="6month" ng-click="dateClick($event)" class="{{ getButtonClass('6month') }}">6 month</button>
-      </div> -->
-<!-- End Date Range -->
+		<br>
+		<div ng-show="!hideItem">
+			<h2 class="text-capitalize">{{range}} : {{ selectedItem }} </h2>
+		</div>
 
 
-    
+		<!-- if range = parameter ,all items must show slot -->
+		<div class="row" ng-show="range=='parameter' && !hideItem">
+        <div class="col-sm-12 col-md-12" ng-repeat="slot in slots |  orderBy: 'spc_ordering' ">
+          <div class="thumbnail">
+          <h3>Slot : {{ slot.slot}}</h3>
+            <img  class="pull-left img-responsive" ng-src="{{ getImageSrc(station.station,slot.slot,range).scratter }}" alt="..." />
+          </div>
+        </div>
+      </div>
 
+      <!-- if range = slot ,all items must show parameter -->
+      <div class="row" ng-show="range=='slot' && !hideItem">
+        <div class="col-sm-12 col-md-12" ng-repeat="parameter in parameters |  orderBy: 'spc_ordering' ">
+          <div class="thumbnail">
+          <h3>Parameter : {{ parameter.name}}</h3>
+            <img class="pull-left img-responsive" ng-src="{{ getImageSrc(station.station,parameter.name,range).scratter }}" alt="..." />
+          </div>
+        </div>
+      </div>
 
 </div>
 

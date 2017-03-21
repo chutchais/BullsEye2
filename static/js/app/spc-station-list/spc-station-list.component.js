@@ -15,10 +15,18 @@ angular.module('spcStationList').
             $scope.showDateRange=false
             $scope.range = '7day'
 
+            if (station) {
+                $scope.showBack = true
+            }
+            else {
+                $scope.showBack = false
+            }
+
+
             var from_path=location.pathname.replace("/","");
             from_path=from_path.split('/');
             $scope.from_path = from_path[0];
-            console.log(from_path[0] + ' On spc station')
+            // console.log(from_path[0] + ' On spc station')
              
 
             

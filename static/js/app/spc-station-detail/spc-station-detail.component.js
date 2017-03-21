@@ -16,7 +16,8 @@ angular.module('spcStationDetail').
             $scope.tester = tester
             $scope.showDateRange=false
             $scope.range = 'slot'
-            console.log(tester)
+            $scope.hideItem = true;
+            // console.log(tester)
 
             var from_path=location.pathname.replace("/","");
             from_path=from_path.split('/');
@@ -73,16 +74,22 @@ angular.module('spcStationDetail').
                     $scope.showDateRange=true
                     }
                     
-                  Parameter.get(param_kwarg,function(parameters) {
-                    //do something with todos
-                    $scope.parameters = parameters
-                    angular.forEach(parameters, function(parameter) {
-                       if (true){
-                         // console.log(parameter.description);
-                          }
-                    });
-                  });
+                  // Parameter.get(param_kwarg,function(parameters) {
+                  //   $scope.parameters = parameters
+                  //   angular.forEach(parameters, function(parameter) {
+                  //   });
+                  // });
+                  var item_kwrg={"family":family,"station":station,"spc_control":"True"};
+                    Parameter.get(item_kwrg,function(parameters) {
+                        $scope.parameters = parameters
+                        // console.log(parameters)
+                      });
 
+                    var item_kwrg={"family":family,"station":station,"tester":tester};
+                    Tester.get(item_kwrg,function(testers) {
+                        $scope.slots = testers
+                        // console.log(testers)
+                      });
 
             }
 
@@ -102,33 +109,35 @@ angular.module('spcStationDetail').
 
             $scope.dateClick = function (active) { 
                 
-                $scope.range = active.currentTarget.value
+                $scope.range = active.currentTarget.value;
+                $scope.hideItem = true;
                 // console.log(active.currentTarget.value)
-                if (active.currentTarget.value=='slot'){
-                    var item_kwrg={"family":family,"station":station,"tester":tester};
-                    Tester.get(item_kwrg,function(testers) {
-                        $scope.selectItems = testers
-                        // console.log(testers)
-                      });
-                    }
+                // if (active.currentTarget.value=='slot'){
+                //     var item_kwrg={"family":family,"station":station,"tester":tester};
+                //     Tester.get(item_kwrg,function(testers) {
+                //         $scope.slots = testers
+                //       });
+                //     }
 
-                if (active.currentTarget.value=='parameter'){
-                    var item_kwrg={"family":family,"station":station,"spc_control":"True"};
-                    Parameter.get(item_kwrg,function(parameters) {
-                        $scope.selectItems = parameters
-                        // console.log(parameters)
-                      });
-                    }
+                // if (active.currentTarget.value=='parameter'){
+                //     var item_kwrg={"family":family,"station":station,"spc_control":"True"};
+                //     Parameter.get(item_kwrg,function(parameters) {
+                //         $scope.parameters = parameters
+                //         // console.log(parameters)
+                //       });
+                //     }
             };
 
             $scope.getImageSrc = function(station,parameter,range){
                 $scope.staton = station
                 var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
                 var hist_scr = "dashboard/graph/histogram/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+                var scratter_scr ="/dashboard/spc/control/"
                 // console.log(new_scr)
                 return {
                     "boxplot":boxplot_scr,
-                    "histogram" : hist_scr
+                    "histogram" : hist_scr,
+                    "scratter" :scratter_scr
                 }
             }
 
@@ -141,6 +150,13 @@ angular.module('spcStationDetail').
                 else {
                     return "btn btn-default"
                 }
+            }
+
+
+            $scope.showItem = function(item){
+                $scope.hideItem = false;
+                $scope.selectedItem = item;
+                // console.log(item)
             }
 
         }]
