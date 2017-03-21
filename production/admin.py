@@ -1,5 +1,7 @@
 #admin12345
 from django.contrib import admin
+from django.contrib import messages
+from django.contrib.admin.filters import RelatedOnlyFieldListFilter
 
 # Register your models here.
 from .models import Bom
@@ -234,10 +236,26 @@ class TesterParameterLimitAdmin(admin.TabularInline):
 def copy_setting_parameter(self, request, queryset):
     firstItem=True
     for obj_tester_slot in queryset:
+        print (obj_tester_slot.limittester_list.count())
+        # if firstItem :
         if firstItem :
-            if obj_tester_slot.limittester_list.count()==0:
-                print ('No Parameter setting..')
+            obj_first_test_slot = obj_tester_slot.limittester_list.all()
+            if obj_first_test_slot.count()==0:
+                self.message_user(request, "First item ,no setting details", level=messages.ERROR)
                 return
+
+            # print ('Total main setting : %s' % obj_first_test_slot.count() )
+        else:
+            # delete all setting
+            # print ('Delete data of %s',obj_tester_slot)
+            obj_tester_slot.limittester_list.all().delete()
+            for i in obj_first_test_slot :
+                print ('%s--%s--%s--%s'%(i.tester,i.parameter,i.ucl,i.lcl))
+                ts,created = TesterParameterLimit.objects.get_or_create(tester=obj_tester_slot,
+                    parameter=i.parameter,cl=i.cl,lcl=i.lcl,ucl=i.ucl)
+                if not created:
+                    self.message_user(request, "Unable to create setting of %s" % obj_tester_slot, level=messages.ERROR)
+            # return
             # for obj_setting in obj_tester_slot.limittester_list.all():
             #     print ('%s--%s--%s'%(obj_setting.parameter.name,obj_setting.ucl,obj_setting.lcl))
         firstItem=False
@@ -247,18 +265,25 @@ def copy_setting_parameter(self, request, queryset):
     #     obj.save()
     #     for i in range(1,13) :
     #         lp,created = LockerPort.objects.get_or_create(lockerid = obj, portid = i)
-    self.message_user(request, "%s successfully copy setting parameter")
-copy_setting_parameter.short_description = "Copy Parameter Setting to all slot"
+    self.message_user(request, "Copy setting parameter successfully")
+copy_setting_parameter.short_description = "Copy Parameter Setting to new slot"
+
+def delete_setting_parameter(self, request, queryset):
+    for obj_tester_slot in queryset:
+        obj_tester_slot.limittester_list.all().delete()
+
+    self.message_user(request, "Delete all setting parameter successfully")
+delete_setting_parameter.short_description = "Delete all parameter setting"
 
 
 class TesterAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-    list_filter = ['station__name','spc_control']
+    search_fields = ['station','name']
+    list_filter = [('station',RelatedOnlyFieldListFilter),'name','spc_control']
     list_display = ('name','station','slot','setting_count','spc_control','spc_ordering')
     fieldsets = [
         (None,               {'fields': ['name','station','slot','spc_control','spc_ordering']}),
     ]
-    actions = [copy_setting_parameter]
+    actions = [copy_setting_parameter,delete_setting_parameter]
 
     # inlines = [ComponentsTrackingInline]
     # def get_queryset(self, request):
@@ -267,6 +292,12 @@ class TesterAdmin(admin.ModelAdmin):
     #     # qs = super(CustomerAdmin, self).queryset(request) # For Django <1.6
     #     qs = qs.order_by('station')
     #     return qs
+
+    # def queryset(self, request):
+    #     if request.user.is_superuser:
+    #         return Entry.objects.all()
+    #     return Entry.objects.filter(author=request.user)
+
     def get_form(self, request, obj=None, **kwargs):
         form = super(TesterAdmin, self).get_form(request, obj, **kwargs)
         form.base_fields['station'].queryset = Station.objects.filter(spc_control=True)
