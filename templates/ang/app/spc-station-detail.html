@@ -35,21 +35,28 @@
 
 
 		<!-- if range = parameter ,all items must show slot -->
-		<div class="row" ng-show="range=='parameter' && !hideItem">
+		<div class="row" ng-if="range=='parameter' && !hideItem">
         <div class="col-sm-12 col-md-12" ng-repeat="slot in slots |  orderBy: 'spc_ordering' ">
           <div class="thumbnail">
           <h3>Slot : {{ slot.slot}}</h3>
-            <img  class="pull-left img-responsive" ng-src="{{ getImageSrc(station.station,slot.slot,range).scratter }}" alt="..." />
+          <!-- {{ getImageSrc(model,station.station,ToSlash(selectedItem),tester,slot.slot,'7day').scratter }} -->
+            <img  class="pull-left img-responsive" 
+            ng-src="{{ getImageSrc(model,station.station,ToSlash(selectedItem),tester,slot.slot,'7day').scratter }}" alt="..." />
+            
           </div>
         </div>
       </div>
 
       <!-- if range = slot ,all items must show parameter -->
-      <div class="row" ng-show="range=='slot' && !hideItem">
+      <div class="row" ng-if="range=='slot' && !hideItem">
         <div class="col-sm-12 col-md-12" ng-repeat="parameter in parameters |  orderBy: 'spc_ordering' ">
           <div class="thumbnail">
           <h3>Parameter : {{ parameter.name}}</h3>
-            <img class="pull-left img-responsive" ng-src="{{ getImageSrc(station.station,parameter.name,range).scratter }}" alt="..." />
+          
+            <img class="pull-left img-responsive" 
+            ng-src="{{ getImageSrc(model,station.station,ToSlash(parameter.name),tester,selectedItem,'7day').scratter }}" alt="..." />
+            
+            
           </div>
         </div>
       </div>

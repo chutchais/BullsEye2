@@ -21,6 +21,7 @@ from .models import DocumentRelated
 from .models import Components
 from .models import ComponentsTracking
 from .models import Tester
+from .models import TesterParameterLimit
 
 
 class BomDetailsInline(admin.TabularInline):
@@ -145,7 +146,7 @@ admin.site.register(Family,FamilyAdmin)
 
 class ParameterAdmin(admin.ModelAdmin):
     search_fields = ['name','description']
-    list_filter = ['critical','station__family','station__station','group','units','activated']
+    list_filter = ['critical','spc_control','station__family','station__station','group','units','activated']
     list_display = ('name','description','units','station','activated',
         'critical','ordering','spc_control','spc_ordering','lower_spec_limit','upper_spec_limit')
     fieldsets = [
@@ -194,13 +195,71 @@ class ComponentsAdmin(admin.ModelAdmin):
     
 admin.site.register(Components,ComponentsAdmin)
 
+
+
+class TesterParameterLimitAdmin(admin.TabularInline):
+    model = TesterParameterLimit
+    extra = 1
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super(TesterParameterLimitAdmin, self).get_form(request, obj, **kwargs)
+    #     form.base_fields['parameter'].queryset = Parameter.objects.filter(spc_control=True)
+    #     return form
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        field = super(TesterParameterLimitAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        if db_field.name == 'parameter':
+            obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
+            obj_tester = self.get_object(request, Tester)
+            kwarg={"spc_control":True}
+            if obj_tester :
+                kwarg={"spc_control":True,"station":obj_tester.station}
+            field.queryset = field.queryset.filter(**kwarg).order_by('spc_ordering')
+        return field
+
+    def get_object(self, request, model):
+        object_id = request.META['PATH_INFO'].strip('/').split('/')[-2]
+        try:
+            object_id = int(object_id)
+        except ValueError:
+            return None
+        return model.objects.get(pk=object_id)
+
+    # def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+    #     if db_field.name == 'parameter':
+    #         kwargs = Parameter.objects.filter(spc_control=True)
+    #     else:
+    #         pass
+    #     return super(TesterParameterLimitAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+def copy_setting_parameter(self, request, queryset):
+    firstItem=True
+    for obj_tester_slot in queryset:
+        if firstItem :
+            if obj_tester_slot.limittester_list.count()==0:
+                print ('No Parameter setting..')
+                return
+            # for obj_setting in obj_tester_slot.limittester_list.all():
+            #     print ('%s--%s--%s'%(obj_setting.parameter.name,obj_setting.ucl,obj_setting.lcl))
+        firstItem=False
+        # print (obj.limittester_list.count())
+    #     obj.status='USED'
+    #     obj.actived=True
+    #     obj.save()
+    #     for i in range(1,13) :
+    #         lp,created = LockerPort.objects.get_or_create(lockerid = obj, portid = i)
+    self.message_user(request, "%s successfully copy setting parameter")
+copy_setting_parameter.short_description = "Copy Parameter Setting to all slot"
+
+
 class TesterAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_filter = ['station__name','spc_control']
-    list_display = ('name','station','slot','spc_control','spc_ordering')
+    list_display = ('name','station','slot','setting_count','spc_control','spc_ordering')
     fieldsets = [
         (None,               {'fields': ['name','station','slot','spc_control','spc_ordering']}),
     ]
+    actions = [copy_setting_parameter]
+
     # inlines = [ComponentsTrackingInline]
     # def get_queryset(self, request):
     # # def queryset(self, request): # For Django <1.6
@@ -208,10 +267,17 @@ class TesterAdmin(admin.ModelAdmin):
     #     # qs = super(CustomerAdmin, self).queryset(request) # For Django <1.6
     #     qs = qs.order_by('station')
     #     return qs
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(TesterAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['station'].queryset = Station.objects.filter(spc_control=True)
+        return form
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "station":
             kwargs["queryset"] = Station.objects.order_by('family','station')
         return super(TesterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    inlines = [TesterParameterLimitAdmin]
     
 admin.site.register(Tester,TesterAdmin)
 

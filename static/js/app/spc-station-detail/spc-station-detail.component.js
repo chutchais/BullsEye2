@@ -98,8 +98,9 @@ angular.module('spcStationDetail').
             };
 
             $scope.ToSlash = function(item){
-                var name=item.name;
+                var name = item;
                 var new_name = name.replace("/","-slash-")
+                console.log(new_name)
                 return new_name;
             }
 
@@ -128,11 +129,11 @@ angular.module('spcStationDetail').
                 //     }
             };
 
-            $scope.getImageSrc = function(station,parameter,range){
+            $scope.getImageSrc = function(family,station,parameter,tester,slot,range){
                 $scope.staton = station
                 var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
                 var hist_scr = "dashboard/graph/histogram/" + family +"/" + station + "/" + parameter + "/" + range + "/"
-                var scratter_scr ="/dashboard/spc/control/"
+                var scratter_scr ="dashboard/graph/xbar/" + family +"/" + station + "/" + parameter + "/" + tester + "/"+ slot + "/"+ range + "/"
                 // console.log(new_scr)
                 return {
                     "boxplot":boxplot_scr,

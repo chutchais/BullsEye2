@@ -359,6 +359,12 @@ class Tester(models.Model):
 	spc_control = models.BooleanField(verbose_name ='SPC Control?',default=False)
 	spc_ordering = models.IntegerField(default=100)
 
+	def __str__(self):
+		return ("%s : slot %s" % (self.name,self.slot))
+
+	def setting_count(self):
+		return self.limittester_list.count()
+
 class TesterParameterLimit(models.Model):
 	tester = models.ForeignKey('Tester' ,related_name='limittester_list')
 	parameter = models.ForeignKey('Parameter' ,related_name='limitparam_list')
@@ -372,6 +378,9 @@ class TesterParameterLimit(models.Model):
 	created_date = models.DateTimeField(auto_now_add=True)
 	modified_date = models.DateTimeField(blank=True, null=True,auto_now=True)
 	user = models.ForeignKey('auth.User',blank=True,null=True)
+
+	def __str__(self):
+		return ("%s : parameter %s" % (self.tester,self.parameter))
 
 
 
