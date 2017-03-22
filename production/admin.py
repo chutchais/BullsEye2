@@ -41,6 +41,46 @@ class BomAdmin(admin.ModelAdmin):
 
 admin.site.register(Bom,BomAdmin)
 
+def modify_spc_setting_parameter(self, request, queryset):
+    firstItem=True
+    for obj_station in queryset:
+        if firstItem :
+            obj_first_tester_param = obj_station.parameter_used.filter(spc_control=True)
+            if obj_first_tester_param.filter(spc_control=True).count()==0:
+                self.message_user(request, "First item ,there is no spc control parameter", level=messages.ERROR)
+                return
+        else:
+            if obj_first_tester_param.count() < obj_station.parameter_used.filter(spc_control=True).count() :
+                self.message_user(request, "First item ,spc control parameter less than another item", level=messages.ERROR)
+                return
+            print ('Before update :%s--%s--%s'%(obj_station.station,obj_station.family,obj_station.parameter_used.filter(spc_control=True).count()))
+            
+            obj_other_station_parm = obj_station.parameter_used.all()
+            obj_other_station_parm.update(spc_control=False,spc_ordering=100,
+                lower_spec_limit=None,upper_spec_limit=None)
+
+            for i in obj_first_tester_param :
+                # print ('%s--%s--%s--%s--%s' % (i.name,i.spc_control,i.spc_ordering,i.lower_spec_limit,i.upper_spec_limit))
+                objX = obj_other_station_parm.get(name=i.name)
+                objX.spc_control=True
+                objX.spc_ordering=i.spc_ordering
+                objX.lower_spec_limit=i.lower_spec_limit
+                objX.upper_spec_limit=i.upper_spec_limit
+                objX.save()
+
+            print ('After update :%s--%s--%s'%(obj_station.station,obj_station.family,obj_station.parameter_used.filter(spc_control=True).count()))
+
+        firstItem=False
+
+
+
+        
+    # parameter_used
+
+    self.message_user(request, "Modify all setting parameter successfully")
+modify_spc_setting_parameter.short_description = "Modify SPC parameter setting"
+
+
 class StationAdmin(admin.ModelAdmin):
     search_fields = ['station','family__name']
     list_filter = ['process','family__name','first_process','last_process','critical','spc_control']
@@ -51,6 +91,7 @@ class StationAdmin(admin.ModelAdmin):
         (None,               {'fields': ['station','name','family','process','first_process',
             'last_process','description','critical','ordering','spc_control','spc_ordering']}),
     ]
+    actions=[modify_spc_setting_parameter]
 
     #form = StationModelForm
     # search_fields = ['station']
@@ -232,6 +273,21 @@ class TesterParameterLimitAdmin(admin.TabularInline):
     #         pass
     #     return super(TesterParameterLimitAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
+def create_parameter_setting(self, request, queryset):
+    for obj_tester_slot in queryset:
+        if obj_tester_slot.limittester_list.all().count() >0 :
+            self.message_user(request, "there is parameter exist.", level=messages.ERROR)
+            return
+        #get spc_control parameter
+        obj_spc_param = obj_tester_slot.station.parameter_used.filter(spc_control=True).order_by('spc_ordering')
+        print ('There are %s parameter(s)' % obj_spc_param.count())
+        for i in obj_spc_param:
+            ts,created = TesterParameterLimit.objects.get_or_create(tester=obj_tester_slot,
+                        parameter=i,cl=None,lcl=None,ucl=None)
+
+    self.message_user(request, "Create default parameter setting successfully")
+create_parameter_setting.short_description = "Create default Parameter Setting"
+
 
 def copy_setting_parameter(self, request, queryset):
     firstItem=True
@@ -291,7 +347,7 @@ class TesterAdmin(admin.ModelAdmin):
     fieldsets = [
         (None,               {'fields': ['name','station','slot','spc_control','spc_ordering']}),
     ]
-    actions = [copy_setting_parameter,delete_setting_parameter]
+    actions = [create_parameter_setting,copy_setting_parameter,delete_setting_parameter]
 
     # inlines = [ComponentsTrackingInline]
     # def get_queryset(self, request):
