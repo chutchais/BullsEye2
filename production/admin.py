@@ -251,8 +251,16 @@ def copy_setting_parameter(self, request, queryset):
             obj_tester_slot.limittester_list.all().delete()
             for i in obj_first_test_slot :
                 print ('%s--%s--%s--%s'%(i.tester,i.parameter,i.ucl,i.lcl))
-                ts,created = TesterParameterLimit.objects.get_or_create(tester=obj_tester_slot,
-                    parameter=i.parameter,cl=i.cl,lcl=i.lcl,ucl=i.ucl)
+                # Must used parameter of thier Family
+                if i.tester.station.family != obj_tester_slot.station.family :
+                    print ('Difference Family')
+                    # Get parameter
+                    new_param=Parameter.objects.get(name=i.parameter.name,station=obj_tester_slot.station)
+                    ts,created = TesterParameterLimit.objects.get_or_create(tester=obj_tester_slot,
+                        parameter=new_param,cl=i.cl,lcl=i.lcl,ucl=i.ucl)
+                else:
+                    ts,created = TesterParameterLimit.objects.get_or_create(tester=obj_tester_slot,
+                        parameter=i.parameter,cl=i.cl,lcl=i.lcl,ucl=i.ucl)
                 if not created:
                     self.message_user(request, "Unable to create setting of %s" % obj_tester_slot, level=messages.ERROR)
             # return

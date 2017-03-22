@@ -28,6 +28,7 @@ from .models import PerformingDetails
 from .models import Parameter
 from .models import Components
 from .models import ComponentsTracking
+from .models import Tester,TesterParameterLimit
 
 from datetime import datetime, timedelta
 from django.db.models import Count,Sum
@@ -2552,17 +2553,73 @@ def graph_xbar_by_date(request,family,station,
     # Get Parameter Upper/Lower Spec
     p = Parameter.objects.get(name=parameter, station__station=station,
                                  station__family__name=family)
+
+    #Get Ucl/Lcl
+    if slot =='ALL':
+        # multiple slot ,select first record
+        t = Tester.objects.filter(name=tester,station__station=station,station__family__name=family)[:1][0]
+    else :
+        t = Tester.objects.get(name=tester,slot=slot,station__station=station,station__family__name=family)
+
+    # t = Tester.objects.get(name=tester,slot=slot,station__station=station,station__family__name=family)
+    ts = t.limittester_list.filter(parameter__name=parameter)
+    if ts.count() > 0:
+        print ('Control limit details : %s -- %s -- %s -- %s' % (t.name,ts[0].parameter,ts[0].ucl,ts[0].lcl))
+        line_ucl=ts[0].ucl
+        line_lcl=ts[0].lcl
+    else:
+        print ('Not found para setting of %s' % parameter)
+
     # print (p.count())
     
-    print ('Xbar details : %s -- %s -- %s' % (family,station,parameter))
+    # print ('Xbar details : %s -- %s -- %s' % (family,station,parameter))
 
-    # pd = PerformingDetail.objects.filter(param_name=param_name,
-    #                                      perform_id__tester_name=tester_name).order_by('-datetime')[:50]
+    #Get Measurement value
+    import datetime
+    from django.db.models import Count,Max,Min,Avg,StdDev
+    date_to_str=date_to
+    date_from_str=date_from
+    date_from = datetime.datetime.strptime(date_from,'%Y-%m-%d')
+    date_to = datetime.datetime.strptime(date_to,'%Y-%m-%d') + datetime.timedelta(days=1)
 
-    n = 100 #pd.count()
-    minvalue_list = np.linspace(-6, 6, n) #pd.values_list('min_value', flat=True)[::-1]
-    maxvalue_list = np.linspace(-6, 6, n) #pd.values_list('max_value', flat=True)[::-1]
-    date_list = np.arange(1,  n, step=1, dtype=None)#pd.values_list('datetime', flat=True)[::-1]
+    parameter=parameter.replace('-slash-','/')
+
+    from django.db.models import F
+    # pt = PerformingDetails.objects.filter(
+    #     performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #     performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #     parameter__name=parameter,
+    #     performing__sn_wo__workorder__product__family__name=family,
+    #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
+    #Some parameter don't has Min or Max limit
+    if slot=='ALL':
+        pd = PerformingDetails.objects.filter(
+            performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+            performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+            parameter__name=parameter,
+            performing__station__family__name=family,
+            performing__station__station=station,
+            performing__tester=tester).exclude(value = None).order_by('-performing__started_date')
+    else:
+        pd = PerformingDetails.objects.filter(
+            performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+            performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+            parameter__name=parameter,
+            performing__station__family__name=family,
+            performing__station__station=station,
+            performing__tester=tester,
+            performing__slot=slot).exclude(value = None).order_by('-performing__started_date')
+    # print ('from %s to %s' %(date_from,date_to))
+    # print ('%s -- %s Total record : %s' % (tester,slot,pd.count()))
+
+    value_list = list(pd.values_list('value',flat=True))[::-1]
+    date_list = list(pd.values_list('performing__started_date',flat=True))[::-1]
+    # print(valueList)
+
+    n = pd.count()
+    # minvalue_list = np.linspace(-6, 6, n) #pd.values_list('min_value', flat=True)[::-1]
+    # maxvalue_list = np.linspace(-6, 6, n) #pd.values_list('max_value', flat=True)[::-1]
+    # date_list = np.arange(1,  n, step=1, dtype=None)#pd.values_list('datetime', flat=True)[::-1]
 
 
 
@@ -2571,109 +2628,70 @@ def graph_xbar_by_date(request,family,station,
     upper_spec = np.empty(n)
     lower_spec = np.empty(n)
     ucl = np.empty(n)
-    ucl1s = np.empty(n)
-    ucl2s = np.empty(n)
     lcl = np.empty(n)
-    lcl1s = np.empty(n)
-    lcl2s = np.empty(n)
-
-    
+        
     line_upper_spec=p.upper_spec_limit
     line_lower_spec=p.lower_spec_limit
-    line_cl= line_lower_spec + (abs(line_upper_spec-line_lower_spec)/2)
 
-    line_ucl1s=2
-    line_lcl1s=-2
-    line_ucl2s=4
-    line_lcl2s=-4
+    sixsigma_value = abs(line_ucl-line_lcl)/2
+    sixsigma2_value = abs(line_ucl-line_lcl)
+    line_cl= line_lcl + (abs(line_ucl-line_lcl)/2)
 
-    print ('Spec Limit : %s -- %s -- %s' % (line_cl,lower_spec,upper_spec))
+    # print ('Spec Limit : %s -- %s -- %s' % (line_cl,lower_spec,upper_spec))
 
     cl.fill(line_cl)
     upper_spec.fill(line_upper_spec)
     lower_spec.fill(line_lower_spec)
-    ucl.fill(0)
-    lcl.fill(0)
-    ucl1s.fill(line_ucl1s)
-    lcl1s.fill(line_lcl1s)
-    ucl2s.fill(line_ucl2s)
-    lcl2s.fill(line_lcl2s)
+    ucl.fill(line_ucl)
+    lcl.fill(line_lcl)
+   
 
-    #x=np.arange(1,n+1)
-    #ax.set_xlim(1, 50)
-    dim = np.arange(0, n+1)
+
+    # dim = np.arange(0, n+1)
     x=np.arange(0,n)
-    #x=date_list
-    #y = np.full(n, 1)
-    #y = np.full(n, ps.lcl*0.6)
-    side='MAX'
-    y = minvalue_list if side == 'MIN' else maxvalue_list
+    y = value_list
 
     # box_plot(ay,y ,'')
 
     #Center Line (CL)
     pos_limit=0
-    ax.plot(x,cl,linestyle='-',color='black', linewidth=2)
+    ax.plot(x,cl,linestyle='-',color='gray', linewidth=1)
     ax.text(pos_limit, line_cl,'{0:.3}'.format(float(line_cl)), ha='left',
             verticalalignment='bottom',color='black', wrap=True,
             bbox={'facecolor':'gray', 'alpha':0.5, 'pad':1})
 
-    #1Sigma Upper line (1ucl)
-    
-    # ax.plot(x,ucl1s,linestyle='--',color='green', linewidth=1)
-    # ax.text(pos_limit, line_ucl1s,float(line_ucl1s).__format__('0.3'), ha='left',
-    #         verticalalignment='bottom',color='black', wrap=True,
-    #         bbox={'facecolor':'green', 'alpha':0.5, 'pad':1})
-
-    #1Sigma Lower line (1lcl)
-    
-    # ax.plot(x,lcl1s,linestyle='--',color='green', linewidth=1)
-    # ax.text(pos_limit, line_lcl1s,float(line_lcl1s).__format__('0.3'), ha='left',
-    #         verticalalignment='bottom',color='black', wrap=True,
-    #         bbox={'facecolor':'green', 'alpha':0.5, 'pad':1})
-
-    #2Sigma Upper line (2ucl)
-    # ax.plot(x,ucl2s,linestyle='--',color='orange', linewidth=1)
-    # ax.text(pos_limit, line_ucl2s,float(line_ucl2s).__format__('0.3'), ha='left',
-    #         verticalalignment='bottom',color='black', wrap=True,
-    #         bbox={'facecolor':'orange', 'alpha':0.5, 'pad':1})
-
-    #2Sigma Upper line (2lcl)
-    # ax.plot(x,lcl2s,linestyle='--',color='orange', linewidth=1)
-    # ax.text(pos_limit, line_lcl2s,float(line_lcl2s).__format__('0.3'), ha='left',
-    #         verticalalignment='bottom',color='black', wrap=True,
-    #         bbox={'facecolor':'orange', 'alpha':0.5, 'pad':1})
-
-    #3Sigma Upper line (3ucl)
-    ax.plot(x,upper_spec,linestyle='-',color='red', linewidth=2)
-    ax.text(pos_limit, line_upper_spec,float(line_upper_spec).__format__('0.3'), ha='left',
+    #3Sigma Upper line (ucl)
+    ax.plot(x,ucl,linestyle='--',color='red', linewidth=1)
+    ax.text(pos_limit, line_ucl,float(line_ucl).__format__('0.3'), ha='left',
             verticalalignment='bottom',color='black', wrap=True,
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':0.5})
 
-    #3Sigma lower line (3lcl)
-    ax.plot(x,lower_spec,linestyle='-',color='red', linewidth=2)
-    ax.text(pos_limit, line_lower_spec,float(line_lower_spec).__format__('0.3'), ha='left',
+    #3Sigma lower line (lcl)
+    ax.plot(x,lcl,linestyle='--',color='red', linewidth=1)
+    ax.text(pos_limit, line_lcl,float(line_lcl).__format__('0.3'), ha='left',
             verticalalignment='bottom',color='black', wrap=True,
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':0.5})
 
     
-    # from django.utils import timezone
-    # import pandas as pd
-    from datetime import timedelta, date
-    import datetime
-    # start_date = date(2017, 3, 1)
-    # end_date = date(2017, 3, 30)
-    # newdate = pd.date_range(start_date, end_date).tolist()
-    import datetime as DT
-    numdays= n
-    base = datetime.datetime.today()- timedelta(hours=n)
-    date_list = [base + datetime.timedelta(hours=x) for x in range(0, numdays)]
+    if ((2*sixsigma2_value)+line_ucl) > line_upper_spec:
+        #3Sigma Upper line (3ucl)
+        ax.plot(x,upper_spec,linestyle='--',color='green', linewidth=1)
+        ax.text(pos_limit, line_upper_spec,float(line_upper_spec).__format__('0.3'), ha='left',
+                verticalalignment='bottom',color='black', wrap=True,
+                bbox={'facecolor':'green', 'alpha':0.5, 'pad':0.5})
+
+        #3Sigma lower line (3lcl)
+        ax.plot(x,lower_spec,linestyle='--',color='green', linewidth=1)
+        ax.text(pos_limit, line_lower_spec,float(line_lower_spec).__format__('0.3'), ha='left',
+                verticalalignment='bottom',color='black', wrap=True,
+                bbox={'facecolor':'green', 'alpha':0.5, 'pad':0.5})
+
+    
     xlabels = [newdate.strftime('%d') if True else newdate for newdate in date_list]#'%b-%d'
     #xlabels = [DT.datetime.strptime(newdate,"%Y-%m-%d") for newdate in date_list ]
     # xlabels = [timezone.localtime(newdate, timezone.get_default_timezone()).strftime('%b-%d') if True else newdate for newdate in date_list]#'%b-%d'
     
-    # print (x)
-    # print (xlabels)
+
     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
     majorLocator   = MultipleLocator(1)
     majorFormatter = FormatStrFormatter('%d')
@@ -2685,6 +2703,7 @@ def graph_xbar_by_date(request,family,station,
     # ax.xaxis.set_minor_locator(minorLocator)
     # ax.xaxis.set_major_formatter(minorFormatter)
     # ax.grid()
+
     ind = np.arange(len(y))
     ind = np.arange(0,  len(y), step=1, dtype=None)
     # print (ind)
@@ -2693,7 +2712,7 @@ def graph_xbar_by_date(request,family,station,
         k.append(str(xlabels[i])[0:10])
     
     # print (k)
-    # ax.plot(ind,y,'o-',lw=1)
+    ax.plot(ind,y,'o-',lw=1)
     # 'ax.grid()
     ax.set_xticklabels(k, minor=False)
 
@@ -2714,8 +2733,11 @@ def graph_xbar_by_date(request,family,station,
     ax.set_title(titletxt)
     ax.set_xlabel('Tester : %s -- Slot : %s' % (tester,slot))
 
-    # ax.set_ylim([(line_lcl+(line_lcl1s-line_cl)), (line_ucl+(line_ucl1s-line_cl))])
-    fig.set_size_inches(10,4, forward=True)
+    if (sixsigma2_value+line_ucl) > line_upper_spec:
+        ax.set_ylim([(line_lower_spec-sixsigma_value), (line_upper_spec+sixsigma_value)])
+        print ('Y limit %s -- %s--%s , %s--%s'%(parameter,line_lcl,line_lcl-sixsigma_value,line_ucl,line_ucl+sixsigma_value))
+
+    fig.set_size_inches(12,5, forward=True)
     #plt.savexfig("image.png",bbox_inches='tight',dpi=100)
     # fig.tight_layout()
     canvas=FigureCanvas(fig)
