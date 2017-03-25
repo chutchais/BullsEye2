@@ -24,6 +24,7 @@ from .models import Components
 from .models import ComponentsTracking
 from .models import Tester
 from .models import TesterParameterLimit
+from django.db.models import Q
 
 
 class BomDetailsInline(admin.TabularInline):
@@ -92,6 +93,8 @@ class StationAdmin(admin.ModelAdmin):
             'last_process','description','critical','ordering','spc_control','spc_ordering']}),
     ]
     actions=[modify_spc_setting_parameter]
+
+    
 
     #form = StationModelForm
     # search_fields = ['station']
@@ -196,6 +199,16 @@ class ParameterAdmin(admin.ModelAdmin):
         (None,               {'fields': ['name','units','group','station','description',
             'attribute','activated','critical','ordering','spc_control','spc_ordering','lower_spec_limit','upper_spec_limit']}),
     ]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ParameterAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['station'].queryset = Station.objects.filter(Q(spc_control=True) | Q(critical=True)).order_by('family','station')
+        return form
+
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == "station":
+    #         kwargs["queryset"] = Station.objects.order_by('family','station')
+    #     return super(ParameterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
     
 admin.site.register(Parameter,ParameterAdmin)
 
@@ -239,8 +252,40 @@ class ComponentsAdmin(admin.ModelAdmin):
 admin.site.register(Components,ComponentsAdmin)
 
 
+class TesterParameterLimitAdmin(admin.ModelAdmin):
+    search_fields = ['tester','parameter']
+    list_filter = [('tester__station',RelatedOnlyFieldListFilter)]
+    list_display = ('tester','parameter','cl','lcl','ucl')
+    fieldsets = [
+        (None,               {'fields': ['tester','parameter','cl','lcl','ucl']}),
+    ]
 
-class TesterParameterLimitAdmin(admin.TabularInline):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(TesterParameterLimitAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['parameter'].queryset = Parameter.objects.filter(spc_control=True)
+        return form
+
+    # def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+    #     field = super(TesterParameterLimitAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    #     if db_field.name == 'parameter':
+    #         obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
+    #         obj_tester = self.get_object(request, Tester)
+    #         kwarg={"spc_control":True}
+    #         if obj_tester :
+    #             kwarg={"spc_control":True,"station":obj_tester.station}
+    #         field.queryset = field.queryset.filter(**kwarg).order_by('spc_ordering')
+    #     return field
+
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == "tester__station":
+    #         kwargs["queryset"] = Station.objects.order_by('family','station')
+    #     return super(TesterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    
+admin.site.register(TesterParameterLimit,TesterParameterLimitAdmin)
+
+
+
+class TesterParameterLimitAdminInline(admin.TabularInline):
     model = TesterParameterLimit
     extra = 1
     # def get_form(self, request, obj=None, **kwargs):
@@ -248,7 +293,7 @@ class TesterParameterLimitAdmin(admin.TabularInline):
     #     form.base_fields['parameter'].queryset = Parameter.objects.filter(spc_control=True)
     #     return form
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        field = super(TesterParameterLimitAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        field = super(TesterParameterLimitAdminInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
         if db_field.name == 'parameter':
             obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
             obj_tester = self.get_object(request, Tester)
@@ -265,6 +310,8 @@ class TesterParameterLimitAdmin(admin.TabularInline):
         except ValueError:
             return None
         return model.objects.get(pk=object_id)
+
+
 
     # def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
     #     if db_field.name == 'parameter':
@@ -372,7 +419,7 @@ class TesterAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Station.objects.order_by('family','station')
         return super(TesterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    inlines = [TesterParameterLimitAdmin]
+    inlines = [TesterParameterLimitAdminInline]
     
 admin.site.register(Tester,TesterAdmin)
 

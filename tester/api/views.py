@@ -86,7 +86,7 @@ class TesterListAPIView(ListAPIView):
 			queryset_list = Tester.objects.filter(
 					Q(spc_control=True) &
 					Q (station__family=family)
-					).distinct('name')
+					).distinct('name','station__station')
 		else:
 			kwarg={"spc_control":"True","station__family":family}
 			if tester :

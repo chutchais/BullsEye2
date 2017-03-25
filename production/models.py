@@ -360,7 +360,7 @@ class Tester(models.Model):
 	spc_ordering = models.IntegerField(default=100)
 
 	def __str__(self):
-		return ("%s : slot %s" % (self.name,self.slot))
+		return ("Station : %s -- %s : slot %s" % (self.station,self.name,self.slot))
 
 	def setting_count(self):
 		return self.limittester_list.count()

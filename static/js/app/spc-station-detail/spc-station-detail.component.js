@@ -15,8 +15,10 @@ angular.module('spcStationDetail').
             $scope.model=family
             $scope.tester = tester
             $scope.showDateRange=false
-            $scope.range = 'slot'
+            $scope.searchBy = 'slot'
+            $scope.dateRange ='14day'
             $scope.hideItem = true;
+
             // console.log(tester)
 
             var from_path=location.pathname.replace("/","");
@@ -108,25 +110,14 @@ angular.module('spcStationDetail').
                 // console.log('range change')
             });
 
-            $scope.dateClick = function (active) { 
-                
-                $scope.range = active.currentTarget.value;
+            $scope.searchByClick = function (active) {                
+                $scope.searchBy = active.currentTarget.value;
                 $scope.hideItem = true;
-                // console.log(active.currentTarget.value)
-                // if (active.currentTarget.value=='slot'){
-                //     var item_kwrg={"family":family,"station":station,"tester":tester};
-                //     Tester.get(item_kwrg,function(testers) {
-                //         $scope.slots = testers
-                //       });
-                //     }
+            };
 
-                // if (active.currentTarget.value=='parameter'){
-                //     var item_kwrg={"family":family,"station":station,"spc_control":"True"};
-                //     Parameter.get(item_kwrg,function(parameters) {
-                //         $scope.parameters = parameters
-                //         // console.log(parameters)
-                //       });
-                //     }
+            $scope.dateClick = function (active) {                
+                $scope.dateRange = active.currentTarget.value;
+               console.log(active.currentTarget.value)
             };
 
             $scope.getImageSrc = function(family,station,parameter,tester,slot,range){
@@ -143,7 +134,18 @@ angular.module('spcStationDetail').
             }
 
             $scope.getButtonClass = function(range){
-                var x = (range === $scope.range);
+                var x = (range === $scope.searchBy);
+                // console.log(x)
+                if (x){
+                    return "btn btn-primary"
+                }
+                else {
+                    return "btn btn-default"
+                }
+            }
+
+            $scope.getDayRangeButtonClass = function(range){
+                var x = (range === $scope.dateRange);
                 // console.log(x)
                 if (x){
                     return "btn btn-primary"

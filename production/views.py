@@ -2511,9 +2511,9 @@ def graph_xbar_by_range(request,family,station,parameter,tester,slot,date_range 
     elif date_range=='14day':
         default_start = date.today()  - datetime.timedelta(days=14)
         group_by='date'
-    elif date_range=='4month':
-        default_start = date.today()  - datetime.timedelta(days=120)
-        group_by='month'
+    elif date_range=='30day':
+        default_start = date.today()  - datetime.timedelta(days=30)
+        group_by='date'
     else: #7days
         default_start = date.today()  - datetime.timedelta(days=7)
         group_by='date'
