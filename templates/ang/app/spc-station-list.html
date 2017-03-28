@@ -10,6 +10,17 @@
 
 
       <div class="row">
+        <!-- For ALL -->
+        <div class="col-sm-6 col-md-4">
+          <div class="thumbnail">
+          <h3><a ng-href="spc/{{model}}/{{station.station}}/ALL/"><small>ALL</small></a></h3>
+            <!-- <img ng-src="{{ getImageSrc(station.station,ToSlash(parameter),range).boxplot }}" alt="..." /> -->
+            <hr>
+            
+          </div>
+        </div>
+        <!-- End for ALL -->
+
         <div class="col-sm-6 col-md-4" ng-repeat="tester in testers | filter:currStation(station) | orderBy: 'spc_ordering'">
           <div class="thumbnail">
           <h3><a ng-href="spc/{{model}}/{{station.station}}/{{tester.name}}/"><small>{{ tester.name }}</small></a></h3>
@@ -18,8 +29,8 @@
             
           </div>
         </div>
-      </div> 
 
+      </div> 
 
 
 </div>

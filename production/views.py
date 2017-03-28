@@ -2551,15 +2551,26 @@ def graph_xbar_by_date(request,family,station,
     fig.patch.set_facecolor('white')
     
     # Get Parameter Upper/Lower Spec
+    print ('Parameter : %s' % parameter)
     p = Parameter.objects.get(name=parameter, station__station=station,
                                  station__family__name=family)
+
+    #Tester = ALL
+    combineAllTester=False
+    if tester=='ALL':
+        combineAllTester=True
+        firstTester = Tester.objects.filter(station__station=station,station__family__name=family)[:1][0]
+        tester=firstTester.name
+        print ('First Tester is : %s' % tester)
+    
 
     #Get Ucl/Lcl
     if slot =='ALL':
         # multiple slot ,select first record
         t = Tester.objects.filter(name=tester,station__station=station,station__family__name=family)[:1][0]
-    else :
+    else : #Slot assigned.
         t = Tester.objects.get(name=tester,slot=slot,station__station=station,station__family__name=family)
+
 
     # t = Tester.objects.get(name=tester,slot=slot,station__station=station,station__family__name=family)
     ts = t.limittester_list.filter(parameter__name=parameter)
@@ -2592,23 +2603,54 @@ def graph_xbar_by_date(request,family,station,
     #     performing__sn_wo__workorder__product__family__name=family,
     #     performing__station__station=station,value__lt=F('limit_max'),value__gt=F('limit_min'))
     #Some parameter don't has Min or Max limit
+
+    kwargs={"performing__started_date__gt":datetime.datetime(date_from.year,date_from.month,date_from.day),
+        "performing__started_date__lt":datetime.datetime(date_to.year,date_to.month,date_to.day),
+        "parameter__name":parameter,
+        "performing__station__family__name":family,
+        "performing__station__station":station,
+        "performing__tester":tester,
+        "performing__slot":slot}   
+
     if slot=='ALL':
-        pd = PerformingDetails.objects.filter(
-            performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
-            performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
-            parameter__name=parameter,
-            performing__station__family__name=family,
-            performing__station__station=station,
-            performing__tester=tester).exclude(value = None).order_by('-performing__started_date')
-    else:
-        pd = PerformingDetails.objects.filter(
-            performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
-            performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
-            parameter__name=parameter,
-            performing__station__family__name=family,
-            performing__station__station=station,
-            performing__tester=tester,
-            performing__slot=slot).exclude(value = None).order_by('-performing__started_date')
+        print ("Show all slot of teser : %s" % tester)
+        kwargs={"performing__started_date__gt":datetime.datetime(date_from.year,date_from.month,date_from.day),
+            "performing__started_date__lt":datetime.datetime(date_to.year,date_to.month,date_to.day),
+            "parameter__name":parameter,
+            "performing__station__family__name":family,
+            "performing__station__station":station,
+            "performing__tester":tester}
+
+    if combineAllTester :
+        print ("Show all slot/Tester of station : %s" % station)
+        kwargs={"performing__started_date__gt":datetime.datetime(date_from.year,date_from.month,date_from.day),
+            "performing__started_date__lt":datetime.datetime(date_to.year,date_to.month,date_to.day),
+            "parameter__name":parameter,
+            "performing__station__family__name":family,
+            "performing__station__station":station}
+
+
+
+    pd = PerformingDetails.objects.filter(**kwargs).exclude(value = None).order_by('-performing__started_date')
+
+    # if slot=='ALL':
+    #     pd = PerformingDetails.objects.filter(
+    #         performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #         performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #         parameter__name=parameter,
+    #         performing__station__family__name=family,
+    #         performing__station__station=station,
+    #         performing__tester=tester).exclude(value = None).order_by('-performing__started_date')
+    # else:
+    #     pd = PerformingDetails.objects.filter(
+    #         performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
+    #         performing__started_date__lt=datetime.datetime(date_to.year,date_to.month,date_to.day),
+    #         parameter__name=parameter,
+    #         performing__station__family__name=family,
+    #         performing__station__station=station,
+    #         performing__tester=tester,
+    #         performing__slot=slot).exclude(value = None).order_by('-performing__started_date')
+
     # print ('from %s to %s' %(date_from,date_to))
     # print ('%s -- %s Total record : %s' % (tester,slot,pd.count()))
 
@@ -2729,6 +2771,8 @@ def graph_xbar_by_date(request,family,station,
         prev_label=label.get_text()
         i=i+1
 
+    if combineAllTester :
+        tester="ALL"
     titletxt= '%s' % (parameter)
     ax.set_title(titletxt)
     ax.set_xlabel('Tester : %s -- Slot : %s' % (tester,slot))

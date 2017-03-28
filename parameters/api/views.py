@@ -95,12 +95,12 @@ class ParameterListAPIView(ListAPIView):
 			kwargs_param={'station__station' :station,'station__family__name':family}
 		
 		if spc_control:
-			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('name')
+			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('spc_ordering')
 		elif station and family:
-			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('-critical','name')
+			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('spc_ordering')
 		elif family:
 			queryset_list=Parameter.objects.filter(station__family__name=family,
-				critical=critical).order_by('-critical','name')
+				critical=critical).order_by('spc_ordering')
 		# else :
 		# 	queryset_list=Parameter.objects.filter(critical=critical)
 		

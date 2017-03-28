@@ -1,0 +1,62 @@
+<div ng-repeat="station in stations | orderBy: 'ordering'">
+
+
+      <!-- <a ng-show="from_path=='distribute'" href="distribute/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> -->
+      <a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}"><h2>{{station.station}} : {{station.name}}</h2></a> 
+      
+      <div>
+      	<h2 ng-show="tester!=''">Tester : {{ tester }} 
+      	<small><a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}">Back</a></small></h2>
+      </div>
+		<!-- Date Range -->
+		      <!-- <div class="btn-group" role="group" aria-label="..." >
+		        <button type="button" ng-model="dateRange" value="slot" ng-click="searchByClick($event)" class="{{ getButtonClass('slot') }}">Slot</button>
+		        <button type="button" ng-model="dateRange" value="parameter" ng-click="searchByClick($event)" class="{{ getButtonClass('parameter') }}">Parameter</button>
+		      </div>
+
+
+			  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+			    Please select {{ searchBy }}
+			    <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu" aria-labelledby="dropdownMenu3">
+			    <li ng-if ="searchBy=='slot'" ng-repeat="item in slots | orderBy: 'spc_ordering'" ng-click="showItem(item.slot)"><a href="#">{{ item.slot }}</a></li>
+			    <li ng-if ="searchBy=='parameter'" ng-repeat="item in parameters | orderBy: 'spc_ordering'" ng-click="showItem(item.name)"><a href="#">{{ item.name }}</a></li>
+
+			  </ul> -->
+
+        <!-- Date Range -->
+          <div class="btn-group" role="group" aria-label="..." >
+            <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getDayRangeButtonClass('7day') }}">7 day</button>
+            <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getDayRangeButtonClass('14day') }}">14 day</button>
+            <button type="button" ng-model="dateRange" value="30day" ng-click="dateClick($event)" class="{{ getDayRangeButtonClass('30day') }}">30 day</button>
+          </div>
+    <!-- End Date Range -->
+
+
+
+		<br>
+		<div ng-show="!hideItem">
+			<h2 class="text-capitalize">{{searchBy}} : {{ selectedItem }} </h2>
+		</div>
+
+     <!-- if range = slot ,all items must show parameter -->
+      <div class="row">
+
+        <div class="col-sm-12 col-md-12" ng-repeat="parameter in parameters |  orderBy: 'spc_ordering' ">
+          <!-- <div class="thumbnail"> -->
+          <h3>Parameter : {{ parameter.name}}</h3>
+          <!-- {{ getImageSrc(model,station.station,ToSlash(parameter.name),'ALL','ALL',dateRange).scratter }} -->
+          <!-- {{ model }} {{ station.station }} {{ ToSlash(parameter.name) }} {{ dateRange }} -->
+          <img  class="pull-left" 
+            ng-src="{{ getImageSrc(model,station.station,ToSlash(parameter.name),'ALL','ALL',dateRange).scratter }}" alt="..." />
+            
+            
+          <!-- </div> -->
+        </div>
+      </div>
+
+</div>
+
+ <!-- img-responsive -->
+
