@@ -1024,13 +1024,14 @@ def execute_transaction(xml):
         if result is None:
             result='PASS'#root.findtext('parameters/parameter[@code="1101"]')
 
-        #Added by Chutchai on March 20,2017
-        #To record test slot.
+
         tester_slot_obj =root.findtext('parameters/parameter[@code="5111"]')
+        # print(tester_slot_obj.text)
         if tester_slot_obj is None:
-            tester_slot = '0' #default
-        else :
-            tester_slot = test_slot_obj
+            tester_slot='0'#root.findtext('parameters/parameter[@code="1101"]')
+        else:
+            tester_slot = tester_slot_obj
+        print(tester_slot)
 
         
 
