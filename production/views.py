@@ -2634,6 +2634,8 @@ def graph_xbar_by_date(request,family,station,
 
     pd = PerformingDetails.objects.filter(**kwargs).exclude(value = None).order_by('-performing__started_date')
 
+    #Last record
+    lastRecord =   datetime.datetime.strftime(pd.first().performing.started_date,'%Y-%m-%d %H:%M:%S')
     # if slot=='ALL':
     #     pd = PerformingDetails.objects.filter(
     #         performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
@@ -2694,10 +2696,10 @@ def graph_xbar_by_date(request,family,station,
     x=np.arange(0,n)
     y = value_list
 
-    # box_plot(ay,y ,'')
+    pos_limit=0
 
     #Center Line (CL)
-    pos_limit=0
+    
     ax.plot(x,cl,linestyle='-',color='gray', linewidth=1)
     ax.text(pos_limit, line_cl,'{0:.3}'.format(float(line_cl)), ha='left',
             verticalalignment='bottom',color='black', wrap=True,
@@ -2781,6 +2783,12 @@ def graph_xbar_by_date(request,family,station,
     if (sixsigma2_value+line_ucl) > line_upper_spec:
         ax.set_ylim([(line_lower_spec-sixsigma_value), (line_upper_spec+sixsigma_value)])
         print ('Y limit %s -- %s--%s , %s--%s'%(parameter,line_lcl,line_lcl-sixsigma_value,line_ucl,line_ucl+sixsigma_value))
+
+    # put Last update info
+    ymin, ymax = ax.get_ylim()
+    xmin, xmax = ax.get_xlim()
+    ax.text(xmax, ymax,'Last update :%s'% lastRecord,style='italic', ha='right',
+            verticalalignment='top',color='black')
 
     fig.set_size_inches(12,5, forward=True)
     #plt.savexfig("image.png",bbox_inches='tight',dpi=100)
