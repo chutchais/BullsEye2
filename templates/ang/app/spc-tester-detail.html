@@ -25,13 +25,24 @@
 
 			  </ul> -->
 
+        <div class="row">
         <!-- Date Range -->
           <div class="btn-group" role="group" aria-label="..." >
             <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getDayRangeButtonClass('7day') }}">7 day</button>
             <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getDayRangeButtonClass('14day') }}">14 day</button>
             <button type="button" ng-model="dateRange" value="30day" ng-click="dateClick($event)" class="{{ getDayRangeButtonClass('30day') }}">30 day</button>
           </div>
-    <!-- End Date Range -->
+        <!-- End Date Range -->
+
+        <!-- Export -->
+        <button type="button" ng-model="exportdata" ng-click="exportClick()" class="btn btn-default">Export Testing Data</button>
+        <!-- End export -->
+        </div>
+
+
+
+
+
 
 
 

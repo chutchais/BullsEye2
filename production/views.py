@@ -2745,6 +2745,7 @@ def graph_xbar_by_date(request,family,station,
 
     ax.xaxis.set_major_locator(majorLocator)
     ax.xaxis.set_major_formatter(majorFormatter)
+
     # ax.xaxis.set_minor_locator(minorLocator)
     # ax.xaxis.set_major_formatter(minorFormatter)
     # ax.grid()
@@ -2785,10 +2786,10 @@ def graph_xbar_by_date(request,family,station,
         print ('Y limit %s -- %s--%s , %s--%s'%(parameter,line_lcl,line_lcl-sixsigma_value,line_ucl,line_ucl+sixsigma_value))
 
     # put Last update info
-    ymin, ymax = ax.get_ylim()
-    xmin, xmax = ax.get_xlim()
-    ax.text(xmax, ymax,'Last update :%s'% lastRecord,style='italic', ha='right',
-            verticalalignment='top',color='black')
+    # ymin, ymax = ax.get_ylim()
+    # xmin, xmax = ax.get_xlim()
+    # ax.text(xmax, ymax-1,'Last update :%s'% lastRecord,style='italic', ha='right',
+    #         verticalalignment='top',color='black')
 
     fig.set_size_inches(12,5, forward=True)
     #plt.savexfig("image.png",bbox_inches='tight',dpi=100)

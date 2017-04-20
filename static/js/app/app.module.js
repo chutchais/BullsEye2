@@ -6,6 +6,7 @@ angular.module('try', [
     'ngCookies',
     'ngResource',
     'ngRoute',
+    // 'ngFileSaver',
     // 'ngSanitize',
     // 'ng-showdown',
     'ui.bootstrap',
@@ -20,6 +21,8 @@ angular.module('try', [
     'station',
     'family',
     'parameter',
+    'export',
+
     //Internal
     'modelList',
     'parameterDetail',

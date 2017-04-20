@@ -6,8 +6,8 @@
 angular.module('spcTesterDetail').
     component('spcTesterDetail', {
         templateUrl: '/api/templates/spc-tester-detail.html',
-        controller:['Tester','Station','Parameter','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource', 
-        function(Tester,Station,Parameter,$cookies, $location, $routeParams, $rootScope, $scope,$resource){
+        controller:['Tester','Station','Parameter','Export','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource','$http', 
+        function(Tester,Station,Parameter,Export,$cookies, $location, $routeParams, $rootScope, $scope,$resource,$http){
             var family = $routeParams.model
             var station = $routeParams.station
             var tester = $routeParams.tester
@@ -107,12 +107,13 @@ angular.module('spcTesterDetail').
             $scope.ToSlash = function(item){
                 var name = item;
                 var new_name = name.replace("/","-slash-")
-                console.log(new_name)
+                // console.log(new_name)
                 return new_name;
             }
 
             $scope.$watch('range',function(){
                 // console.log('range change')
+
             });
 
             $scope.searchByClick = function (active) {                
@@ -124,6 +125,39 @@ angular.module('spcTesterDetail').
                 $scope.dateRange = active.currentTarget.value;
                console.log(active.currentTarget.value)
             };
+
+            $scope.exportClick = function () { 
+               var export_kwrg={"family":family,"station":station,"range":$scope.dateRange};  
+               console.log (export_kwrg)
+               
+               $http({
+                    method: 'GET', 
+                    url: "export/" ,
+                    params : {
+                        "station" : station,
+                        "family" : family,
+                        "range" : $scope.dateRange
+                    } ,
+                    headers: {'Content-Type': "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}, 
+                    responseType: "arraybuffer"
+                })
+                    .success(function(data) {
+                        // $scope.names = eval(data);
+                        var blob = new Blob([data], {
+                                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;'
+                                });
+
+                        var objectUrl = URL.createObjectURL(blob);
+                        window.open(objectUrl);
+                        console.log('Export Data')
+                    })
+                    .error(function(data) {
+                        alert(data);
+                        console.log('Error: ' + data);
+                    });           
+               
+            };
+
 
             $scope.getImageSrc = function(family,station,parameter,tester,slot,range){
                 $scope.staton = station

@@ -33,7 +33,8 @@ urlpatterns = [
     url(r'^api/station/', include('stations.api.urls')),
     url(r'^api/tester/', include('tester.api.urls')),
     url(r'^api/family/', include('familys.api.urls')),
-    url(r'^api/templates/(?P<item>[A-Za-z0-9\_\-\.\/]+)\.html$',  AngularTemplateView.as_view())
+    url(r'^api/templates/(?P<item>[A-Za-z0-9\_\-\.\/]+)\.html$',  AngularTemplateView.as_view()),
+    url(r'^export/', include('export.urls')),
 ]
 
 admin.site.site_header = 'Fabrinet - Administrator'
