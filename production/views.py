@@ -1264,6 +1264,10 @@ def graph_histogram_by_range(request,family,station,parameter,date_range ='7day'
         default_start = date.today()  - datetime.timedelta(days=14)
         date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
         group_by='date'
+    elif date_range=='30day':
+        default_start = date.today()  - datetime.timedelta(days=30)
+        date_to = datetime.datetime.strftime(date.today()+datetime.timedelta(days=1),"%Y-%m-%d")
+        group_by='date'
     elif date_range=='4month':
         default_start = date.today()  - relativedelta(months=4)
         date_to = datetime.datetime.strftime(date.today()+ relativedelta(months=1),"%Y-%m-%d")
@@ -1851,6 +1855,9 @@ def graph_boxplot_by_range(request,family,station,parameter,date_range ='7day'):
         group_by='week'
     elif date_range=='14day':
         default_start = date.today()  - datetime.timedelta(days=14)
+        group_by='date'
+    elif date_range=='30day':
+        default_start = date.today()  - datetime.timedelta(days=30)
         group_by='date'
     elif date_range=='4month':
         default_start = date.today()  - datetime.timedelta(days=120)

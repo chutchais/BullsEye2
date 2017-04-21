@@ -7,8 +7,8 @@
       </a> 
       
       <div>
-      	<h2 ng-show="tester!=''">Tester : {{ tester }} 
-      	<small><a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}">Back</a></small></h2>
+      	<h2 ng-show="tester!=''">Tester : ALL{{ tester }} 
+      	<small><a ng-show="from_path=='spc'" href="spc/{{model}}/{{station.station}}/ALL/">Back</a></small></h2>
       </div>
 
         
@@ -33,15 +33,23 @@
 
         <div class="col-sm-12 col-md-12" ng-repeat="parameter in parameters |  orderBy: 'spc_ordering' ">
           <!-- <div class="thumbnail"> -->
-          <h3><a href="spc/{{model}}/{{station.station}}/ALL/{{ToSlash(parameter.name)}}" > {{ parameter.name}}</a></h3>
+          <h3><a href="spc/{{model}}/{{station.station}}/ALL/{{ToSlash(parameter.name)}}" ng-if="parameter != '' " > {{ parameter.name}}</a></h3>
           <!-- {{ getImageSrc(model,station.station,ToSlash(parameter.name),'ALL','ALL',dateRange).scratter }} -->
           <!-- {{ model }} {{ station.station }} {{ ToSlash(parameter.name) }} {{ dateRange }} -->
           <img  class="pull-left" 
             ng-src="{{ getImageSrc(model,station.station,ToSlash(parameter.name),'ALL','ALL',dateRange).scratter }}" alt="..." />
             
-            
+            <div class="col-sm-12 col-md-12">
+              <img  class="pull-left" 
+              ng-src="{{ getImageSrc(model,station.station,ToSlash(parameter.name),'ALL','ALL',dateRange).boxplot }}" alt="..." />
+              <img  class="pull-left" 
+              ng-src="{{ getImageSrc(model,station.station,ToSlash(parameter.name),'ALL','ALL',dateRange).histogram }}" alt="..." />
+            </div>
           <!-- </div> -->
         </div>
+
+
+
       </div>
 
 </div>

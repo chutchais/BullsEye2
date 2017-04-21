@@ -3,17 +3,24 @@
 
 // .controller('Controller', ['$scope','$resource','Family',function($scope,$resource,Family) {
 
-angular.module('spcTesterDetail').
-    component('spcTesterDetail', {
-        templateUrl: '/api/templates/spc-tester-detail.html',
+angular.module('spcParameterDetail').
+    component('spcParameterDetail', {
+        templateUrl: '/api/templates/spc-parameter-detail.html',
         controller:['Tester','Station','Parameter','Export','$cookies', '$location', '$routeParams', '$rootScope', '$scope','$resource','$http', 
         function(Tester,Station,Parameter,Export,$cookies, $location, $routeParams, $rootScope, $scope,$resource,$http){
             var family = $routeParams.model
             var station = $routeParams.station
             var tester = $routeParams.tester
             var range = $routeParams.range
-            $scope.model=family
 
+            var parameter = $routeParams.parameter
+            parameter=parameter.replace("-slash-","/");
+            parameter=parameter.replace("-slash-","/");
+
+            $scope.model=family
+            $scope.tester=tester
+            $scope.parameter=parameter
+            console.log(parameter)
             
             $scope.showDateRange=false
             $scope.searchBy = 'slot'
@@ -25,10 +32,10 @@ angular.module('spcTesterDetail').
             var from_path=location.pathname.replace("/","");
             from_path=from_path.split('/');
             $scope.from_path = from_path[0];
-            if ($routeParams.tester == null){
-                $scope.tester = from_path[3]
-                // console.log(from_path[3] + ' On spc station')
-            }
+            // if ($routeParams.tester == null){
+            //     $scope.tester = from_path[3]
+            //     console.log(from_path[3] + ' On spc station')
+            // }
             
              
 
@@ -36,20 +43,18 @@ angular.module('spcTesterDetail').
 
             if (family){
                 var station_kwrg={"family":family};
-                var tester_kwrg={"onlytester":"True","family":family};
+                // var tester_kwrg={"onlytester":"True","family":family};
                 
                 if (from_path[0]=='spc'){
                         station_kwrg={"family":family,"spc":"true"}
                 }
 
                 if (station) {
-                    // station_kwrg={"family":family,"station" : station}
-                    
-                    // if (from_path[0]=='spc'){
-                    //     station_kwrg={"family":family,"station" : station,"spc":"true"}
-                    // }
+                    station_kwrg={"family":family,"station" : station}
+                    if (from_path[0]=='spc'){
+                        station_kwrg={"family":family,"station" : station,"spc":"true"}
+                    }
                     // console.log(station_kwrg)
-                    station_kwrg={"family":family,"station" : station,"spc":"true"}
                     $scope.showDateRange=true
                 }
 
@@ -63,10 +68,10 @@ angular.module('spcTesterDetail').
                     });
                   });
 
-                  Tester.get(tester_kwrg,function(testers) {
-                    $scope.testers = testers
-                    // console.log(testers)
-                  });
+                  // Tester.get(tester_kwrg,function(testers) {
+                  //   $scope.testers = testers
+                  //   // console.log(testers)
+                  // });
 
                   
                 var param_kwarg = {"family":family,"critical":"True"};
@@ -88,17 +93,19 @@ angular.module('spcTesterDetail').
                   //   angular.forEach(parameters, function(parameter) {
                   //   });
                   // });
-                  var item_kwrg={"family":family,"station":station,"spc_control":"True"};
+                  var item_kwrg={"family":family,
+                                "station":station,
+                                "parameter" :parameter};
                     Parameter.get(item_kwrg,function(parameters) {
                         $scope.parameters = parameters
                         // console.log(parameters)
                       });
 
-                    var item_kwrg={"family":family,"station":station,"tester":tester};
-                    Tester.get(item_kwrg,function(testers) {
-                        $scope.slots = testers
-                        // console.log(testers)
-                      });
+                    // var item_kwrg={"family":family,"station":station,"tester":tester};
+                    // Tester.get(item_kwrg,function(testers) {
+                    //     $scope.slots = testers
+                    //     // console.log(testers)
+                    //   });
 
             }
 

@@ -44,6 +44,9 @@ angular.module('try').
               when("/spc/:model/:station/ALL", {
                 template: "<spc-tester-detail></spc-tester-detail>"
               }).
+              when("/spc/:model/:station/ALL/:parameter", {
+                template: "<spc-parameter-detail></spc-parameter-detail>"
+              }).
               when("/spc/:model/:station/:tester", {
                 template: "<spc-station-detail></spc-station-detail>"
               }).

@@ -79,6 +79,9 @@ class ParameterListAPIView(ListAPIView):
 	# pagination_class = ParameterPageNumberPagination
 	filter_fields = ['name']
 
+	def f(**kwargs):
+		return kwargs
+
 	def get_queryset(self,*args,**kwargs):
 		queryset_list=None
 		# default_critical="False"
@@ -86,13 +89,19 @@ class ParameterListAPIView(ListAPIView):
 		family = self.request.GET.get("family")
 		critical = self.request.GET.get("critical")
 		spc_control = self.request.GET.get("spc_control")
+		parameter = self.request.GET.get("parameter")
 
 		if critical:
 			kwargs_param={'station__station' :station,'station__family__name':family,'critical': critical}
 		elif spc_control:
 			kwargs_param={'station__station' :station,'station__family__name':family,'spc_control': 'True'}
+		elif parameter:
+			kwargs_param={'station__station' :station,'station__family__name':family,'name': parameter}
 		else:
 			kwargs_param={'station__station' :station,'station__family__name':family}
+
+		# kwargs_param = f(**kwargs_tmp)
+
 		
 		if spc_control:
 			queryset_list=Parameter.objects.filter(**kwargs_param).order_by('spc_ordering')

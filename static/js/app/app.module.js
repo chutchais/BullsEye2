@@ -29,5 +29,6 @@ angular.module('try', [
     'spcStationList',
     'spcStationDetail',
     'spcTesterDetail',
+    'spcParameterDetail',
     'tryNav',
 ]);
