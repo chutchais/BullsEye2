@@ -2634,8 +2634,7 @@ def graph_xbar_by_date(request,family,station,
 
     pd = PerformingDetails.objects.filter(**kwargs).exclude(value = None).order_by('-performing__started_date')
 
-    #Last record
-    lastRecord =   datetime.datetime.strftime(pd.first().performing.started_date,'%Y-%m-%d %H:%M:%S')
+    
     # if slot=='ALL':
     #     pd = PerformingDetails.objects.filter(
     #         performing__started_date__gt=datetime.datetime(date_from.year,date_from.month,date_from.day),
@@ -2659,7 +2658,13 @@ def graph_xbar_by_date(request,family,station,
 
     value_list = list(pd.values_list('value',flat=True))[::-1]
     date_list = list(pd.values_list('performing__started_date',flat=True))[::-1]
+    from django.utils.timezone import localtime
+    for i in range(len(date_list)):
+        date_list[i]=localtime(date_list[i])
     # print(valueList)
+
+    #Last record
+    lastRecord =   datetime.datetime.strftime(localtime(pd.first().performing.started_date),'%Y-%m-%d %H:%M:%S')
 
     n = pd.count()
     # minvalue_list = np.linspace(-6, 6, n) #pd.values_list('min_value', flat=True)[::-1]
@@ -2733,6 +2738,7 @@ def graph_xbar_by_date(request,family,station,
 
     
     xlabels = [newdate.strftime('%d') if True else newdate for newdate in date_list]#'%b-%d'
+    # print (xlabels)
     #xlabels = [DT.datetime.strptime(newdate,"%Y-%m-%d") for newdate in date_list ]
     # xlabels = [timezone.localtime(newdate, timezone.get_default_timezone()).strftime('%b-%d') if True else newdate for newdate in date_list]#'%b-%d'
     
@@ -2786,10 +2792,11 @@ def graph_xbar_by_date(request,family,station,
         print ('Y limit %s -- %s--%s , %s--%s'%(parameter,line_lcl,line_lcl-sixsigma_value,line_ucl,line_ucl+sixsigma_value))
 
     # put Last update info
-    # ymin, ymax = ax.get_ylim()
-    # xmin, xmax = ax.get_xlim()
-    # ax.text(xmax, ymax-1,'Last update :%s'% lastRecord,style='italic', ha='right',
-    #         verticalalignment='top',color='black')
+    ymin, ymax = ax.get_ylim()
+    xmin, xmax = ax.get_xlim()
+    newy = ymax - ((ymax-ymin)*0.01)
+    ax.text(xmax, newy,'Last update :%s'% lastRecord,style='italic', ha='right',
+            verticalalignment='top',color='black',fontsize=10)
 
     fig.set_size_inches(12,5, forward=True)
     #plt.savexfig("image.png",bbox_inches='tight',dpi=100)
