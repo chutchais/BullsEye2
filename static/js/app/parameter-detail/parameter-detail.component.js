@@ -63,14 +63,27 @@ angular.module('parameterDetail').
                 // scope.searchQuery = ""
             }
 
-            $scope.getImageSrc = function(parameter,range){
-                // $scope.station = station
+            // $scope.getImageSrc = function(parameter,range){
+            //     // $scope.station = station
+            //     var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+            //     var hist_scr = "dashboard/graph/histogram/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+            //     // console.log(new_scr)
+            //     return {
+            //         "boxplot":boxplot_scr,
+            //         "histogram" : hist_scr
+            //     }
+            // }
+
+            $scope.getImageSrc = function(family,station,parameter,tester,slot,range){
+                $scope.staton = station
                 var boxplot_scr = "dashboard/graph/boxplot/" + family +"/" + station + "/" + parameter + "/" + range + "/"
                 var hist_scr = "dashboard/graph/histogram/" + family +"/" + station + "/" + parameter + "/" + range + "/"
+                var scratter_scr ="dashboard/graph/xbar/" + family +"/" + station + "/" + parameter + "/" + tester + "/"+ slot + "/"+ range + "/"
                 // console.log(new_scr)
                 return {
                     "boxplot":boxplot_scr,
-                    "histogram" : hist_scr
+                    "histogram" : hist_scr,
+                    "scratter" :scratter_scr
                 }
             }
 

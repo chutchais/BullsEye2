@@ -7,6 +7,7 @@
 		      <div class="btn-group" role="group" aria-label="..." >
 		        <button type="button" ng-model="dateRange" value="7day" ng-click="dateClick($event)" class="{{ getButtonClass('7day') }}">7 day</button>
 		        <button type="button" ng-model="dateRange" value="14day" ng-click="dateClick($event)" class="{{ getButtonClass('14day') }}">14 day</button>
+		        <button type="button" ng-model="dateRange" value="30day" ng-click="dateClick($event)" class="{{ getButtonClass('30day') }}">30 day</button>
 		        <button type="button" ng-model="dateRange" value="6week" ng-click="dateClick($event)" class="{{ getButtonClass('6week') }}">6 week</button>
 		        <button type="button" ng-model="dateRange" value="4month" ng-click="dateClick($event)" class="{{ getButtonClass('4month') }}">4 month</button>
 		        <button type="button" ng-model="dateRange" value="6month" ng-click="dateClick($event)" class="{{ getButtonClass('6month') }}">6 month</button>
@@ -55,15 +56,21 @@
 	<div class="col-sm-6 col-md-6">
 	  <div class="thumbnail">
 	  <h3>Boxplot</h3>
-	    <img ng-src="{{ getImageSrc(ToSlash(parameter),range).boxplot }}" alt="...">
+	    <img ng-src="{{ getImageSrc(family,station,ToSlash(parameter),'ALL','ALL',dateRange).boxplot }}" alt="...">
 	  </div>
 	</div>
 
 	<div class="col-sm-6 col-md-6">
 	  <div class="thumbnail">
 	  <h3>Histrogram</h3>
-	    <img ng-src="{{ getImageSrc(ToSlash(parameter),range).histogram }}" alt="...">
+	    <img ng-src="{{ getImageSrc(family,station,ToSlash(parameter),'ALL','ALL',dateRange).histogram }}" alt="...">
 	  </div> 
 	</div>
 
+</div>
+<div class="row">
+	<div class="thumbnail">
+	  <h3>Run Chart</h3>
+	    <img ng-src="{{ getImageSrc(family,station,ToSlash(parameter),'ALL','ALL',range).scratter }}" alt="...">
+	  </div>
 </div>
