@@ -2677,7 +2677,10 @@ def graph_xbar_by_date(request,family,station,
         lower_spec = np.empty(n)
         ucl = np.empty(n)
         lcl = np.empty(n)
-            
+        
+        print ('line_upper_spec= %s'% p.upper_spec_limit)
+        print ('line_lower_spec= %s'% p.lower_spec_limit)
+
         line_upper_spec=p.upper_spec_limit
         line_lower_spec=p.lower_spec_limit
 
@@ -2689,13 +2692,13 @@ def graph_xbar_by_date(request,family,station,
 
 
         if line_ucl == 0 and line_lcl == 0:
+            sixsigma_value = 0
+            sixsigma2_value = 0
+            line_cl = 0          
+        else :
             sixsigma_value = abs(line_ucl-line_lcl)/2
             sixsigma2_value = abs(line_ucl-line_lcl)
             line_cl= line_lcl + (abs(line_ucl-line_lcl)/2)
-        else :
-            sixsigma_value = 0
-            sixsigma2_value = 0
-            line_cl = 0
 
 
         # print ('Spec Limit : %s -- %s -- %s' % (line_cl,lower_spec,upper_spec))
@@ -2726,7 +2729,16 @@ def graph_xbar_by_date(request,family,station,
                 verticalalignment='bottom',color='black', wrap=True,
                 bbox={'facecolor':'red', 'alpha':0.5, 'pad':0.5})
 
-        
+        # ax.plot(x,upper_spec,linestyle='--',color='green', linewidth=1)
+        # ax.text(pos_limit, line_upper_spec,float(line_upper_spec).__format__('0.3'), ha='left',
+        #     verticalalignment='bottom',color='black', wrap=True,
+        #     bbox={'facecolor':'green', 'alpha':0.5, 'pad':0.5})
+
+        # #3Sigma lower line (3lcl)
+        # ax.plot(x,lower_spec,linestyle='--',color='green', linewidth=1)
+        # ax.text(pos_limit, line_lower_spec,float(line_lower_spec).__format__('0.3'), ha='left',
+        #     verticalalignment='bottom',color='black', wrap=True,
+        #     bbox={'facecolor':'green', 'alpha':0.5, 'pad':0.5})
         if ((2*sixsigma2_value)+line_ucl) > line_upper_spec:
             #3Sigma Upper line (3ucl)
             ax.plot(x,upper_spec,linestyle='--',color='green', linewidth=1)
